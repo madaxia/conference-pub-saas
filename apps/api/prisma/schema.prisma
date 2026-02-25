@@ -1,0 +1,539 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assets      Asset[]
+  auditLogs   AuditLog[]
+  printOrders PrintOrder[]
+  projects    Project[]
+  templates   Template[]
+  enterprises Enterprise[]
+  users       User[]
+  Ebook       Ebook[]
+
+  @@index([name])
+}
+
+model User {
+  id                    String                @id @default(cuid())
+  tenantId              String
+  email                 String
+  name                  String
+  passwordHash          String?
+  role                  UserRole              @default(member)
+  points                Int                   @default(200)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  uploadedAssets        Asset[]
+  auditLogs             AuditLog[]
+  notifications         Notification[]
+  pointTransactions     PointTransaction[]
+  projects              Project[]             @relation("ProjectOwner")
+  reviews               Review[]              @relation("ReviewReviewer")
+  reviewComments        ReviewComment[]
+  templatePurchases     TemplatePurchase[]
+  tenant                Tenant                @relation(fields: [tenantId], references: [id])
+  fontUploads           UserFontUpload[]
+  groupMemberships      UserGroupMember[]
+  subscriptions         UserSubscription[]
+  enterpriseMemberships EnterpriseMember[]
+  operationLogs         ProjectOperationLog[]
+
+  @@unique([tenantId, email])
+}
+
+enum UserRole {
+  member
+  admin
+  superadmin
+}
+
+model Project {
+  id                  String                @id @default(cuid())
+  tenantId            String
+  name                String
+  conferenceName      String
+  issueDate           DateTime
+  status              ProjectStatus         @default(draft)
+  projectType         String                @default("personal")
+  enterpriseId        String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  ownerId             String
+  assets              Asset[]
+  printOrders         PrintOrder[]
+  operationLogs       ProjectOperationLog[]
+  owner               User                  @relation("ProjectOwner", fields: [ownerId], references: [id])
+  tenant              Tenant                @relation(fields: [tenantId], references: [id])
+  enterprise          Enterprise?           @relation(fields: [enterpriseId], references: [id])
+  Document            Document[]
+  Ebook               Ebook[]
+  ProjectCollaborator ProjectCollaborator[]
+
+  @@index([tenantId])
+  @@index([ownerId])
+  @@index([enterpriseId])
+  @@index([projectType])
+}
+
+enum ProjectStatus {
+  draft
+  review
+  approved
+  published
+  archived
+}
+
+model ProjectOperationLog {
+  id         String   @id @default(cuid())
+  projectId  String
+  userId     String
+  action     String
+  details    String?
+  pointsUsed Int?
+  createdAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Document {
+  id        String     @id @default(cuid())
+  projectId String
+  title     String
+  content   Json?
+  version   Int        @default(1)
+  status    String     @default("draft")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviews   Review[]
+  Revision  Revision[]
+
+  @@index([projectId])
+}
+
+model Revision {
+  id         String   @id @default(cuid())
+  documentId String
+  content    Json
+  version    Int
+  createdBy  String
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model Template {
+  id           String             @id @default(cuid())
+  tenantId     String?
+  name         String
+  description  String?
+  category     String
+  config       Json?
+  isPublic     Boolean            @default(false)
+  isPremium    Boolean            @default(false)
+  points       Int                @default(0)
+  aiFileUrl    String?
+  pdfFileUrl   String?
+  previewUrl   String?
+  thumbnailUrl String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  tenant       Tenant?            @relation(fields: [tenantId], references: [id])
+  purchases    TemplatePurchase[]
+
+  @@index([tenantId])
+  @@index([category])
+}
+
+model TemplatePurchase {
+  id         String   @id @default(cuid())
+  userId     String
+  templateId String
+  points     Int
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id])
+
+  @@unique([userId, templateId])
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  projectId String?
+  tenantId  String
+  userId    String
+  name      String
+  url       String
+  mimeType  String?
+  size      Int?
+  createdAt DateTime @default(now())
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model Review {
+  id         String          @id @default(cuid())
+  documentId String
+  reviewerId String
+  status     String          @default("pending")
+  decision   String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  document   Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reviewer   User            @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  comments   ReviewComment[]
+
+  @@index([documentId])
+  @@index([reviewerId])
+}
+
+model ReviewComment {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  content   String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([reviewId])
+}
+
+model PrintOrder {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  printerId       String?
+  status          String   @default("pending")
+  totalPrice      Float    @default(0)
+  paperType       String?
+  paperSize       String?
+  bindingType     String?
+  quantity        Int      @default(0)
+  shippingAddress String?
+  contactName     String?
+  contactPhone    String?
+  notes           String?
+  pricingDetails  Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@index([printerId])
+}
+
+model Printer {
+  id           String   @id @default(cuid())
+  name         String
+  address      String?
+  contact      String?
+  phone        String?
+  email        String?
+  pricing      Json?
+  capabilities Json?
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PrinterApplication {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  contact   String
+  phone     String
+  email     String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ebook {
+  id            String             @id @default(cuid())
+  tenantId      String
+  projectId     String?
+  title         String
+  url           String
+  coverUrl      String?
+  pdfUrl        String?
+  htmlContent   String?
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  project       Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tenant        Tenant?            @relation(fields: [tenantId], references: [id])
+  subscriptions UserSubscription[]
+
+  @@index([tenantId])
+  @@index([projectId])
+}
+
+model UserSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  ebookId   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  ebook     Ebook    @relation(fields: [ebookId], references: [id])
+
+  @@unique([userId, ebookId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserFontUpload {
+  id        String     @id @default(cuid())
+  userId    String
+  name      String
+  family    String
+  url       String
+  status    FontStatus @default(pending)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+enum FontStatus {
+  pending
+  approved
+  rejected
+  deleted
+}
+
+model UserGroup {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  members     UserGroupMember[]
+}
+
+model UserGroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     String    @default("member")
+  joinedAt DateTime  @default(now())
+  group    UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  action    String
+  target    String?
+  details   Json?
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model PointTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  amount    Int
+  reason    String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// Enterprise models
+model Enterprise {
+  id             String   @id @default(cuid())
+  name           String
+  contactName    String
+  contactPhone   String
+  contactEmail   String
+  points         Int      @default(0)
+  pointsDiscount Float    @default(0.9)
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  members      EnterpriseMember[]
+  projects     Project[]
+  invites      EnterpriseInvite[]
+  pointRecords EnterprisePoints[]
+  Tenant       Tenant?            @relation(fields: [tenantId], references: [id])
+  tenantId     String?
+
+  @@index([status])
+}
+
+model EnterpriseMember {
+  id           String   @id @default(cuid())
+  enterpriseId String
+  userId       String
+  role         String   @default("member")
+  status       String   @default("active")
+  joinedAt     DateTime @default(now())
+
+  enterprise Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([enterpriseId, userId])
+  @@index([enterpriseId])
+  @@index([userId])
+}
+
+model EnterpriseInvite {
+  id           String    @id @default(cuid())
+  enterpriseId String
+  invitedBy    String
+  code         String    @unique
+  usedAt       DateTime?
+  usedBy       String?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  enterprise Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  @@index([enterpriseId])
+}
+
+model EnterprisePoints {
+  id           String   @id @default(cuid())
+  enterpriseId String
+  points       Int
+  actualPoints Int
+  amount       Float
+  type         String
+  reason       String?
+  createdAt    DateTime @default(now())
+
+  enterprise Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  @@index([enterpriseId])
+}
+
+model EnterpriseApplication {
+  id           String   @id @default(cuid())
+  contactName  String
+  contactPhone String
+  contactEmail String
+  companyName  String
+  position     String
+  appliedBy    String
+  status       String   @default("pending")
+  enterpriseId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([companyName])
+}
+
+// Knowledge base model
+model KnowledgeBaseItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  type        String
+  fileUrl     String?
+  content     String?
+  tags        String[]
+  status      String   @default("pending")
+  errorMsg    String?
+  uploadedBy  String
+  fileSize    Int?
+  mimeType    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([uploadedBy])
+}
+
+model UserPoints {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectCollaborator {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  canEdit   Boolean  @default(true)
+  role      String   @default("editor")
+  status    String   @default("active")
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model ProjectAutoSave {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  content   Json
+  createdAt DateTime @default(now())
+
+  @@index([projectId, userId])
+}

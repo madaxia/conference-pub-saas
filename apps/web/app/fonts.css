@@ -1,0 +1,167 @@
+/* 
+ * Local embedded fonts for ConferencePub platform
+ * All fonts are free for commercial use
+ */
+
+/* ============================
+   Google Fonts (CDN loaded)
+   ============================ */
+
+/* Inter - Primary font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+/* ============================
+   Noto Sans SC (Simplified Chinese)
+   ============================ */
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 100;
+  src: local('Noto Sans SC Thin'), local('NotoSansSC-Thin'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Thin.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Noto Sans SC Light'), local('NotoSansSC-Light'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Light.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Noto Sans SC Regular'), local('NotoSansSC-Regular'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Regular.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Noto Sans SC Medium'), local('NotoSansSC-Medium'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Medium.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Noto Sans SC Bold'), local('NotoSansSC-Bold'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Bold.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 900;
+  src: local('Noto Sans SC Black'), local('NotoSansSC-Black'),
+       url('https://fonts.gstatic.com/ea/notisansc/v5/NotoSansSC-Black.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* ============================
+   Noto Serif SC (Simplified Chinese Serif)
+   ============================ */
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Noto Serif SC Regular'), local('NotoSerifSC-Regular'),
+       url('https://fonts.gstatic.com/ea/notoserifsc/v7/NotoSerifSC-Regular.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Noto Serif SC Bold'), local('NotoSerifSC-Bold'),
+       url('https://fonts.gstatic.com/ea/notoserifsc/v7/NotoSerifSC-Bold.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* ============================
+   System fallback fonts
+   ============================ */
+
+/* Simplified Chinese fallbacks */
+-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", "Source Han Sans CN", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Heiti SC", sans-serif
+
+/* Traditional Chinese */
+"Microsoft JhengHei", "PingFang TC", "Hiragino Sans TC", "Noto Sans TC", "Noto Sans HK", sans-serif
+
+/* Serif fallbacks */
+Georgia, "Times New Roman", "Noto Serif SC", "Source Han Serif CN", "Songti SC", "SimSun", serif
+
+/* Cursive/Brush (for decorative fonts) */
+"ZCOOL XiaoWei", "Ma Shan Zheng", "KaiTi", "STKaiti", cursive
+
+/* ============================
+   Font Family Definitions
+   ============================ */
+
+/* Chinese Sans-Serif */
+--font-noto-sans-sc: 'Noto Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+--font-noto-serif-sc: 'Noto Serif SC', 'Source Han Serif CN', 'Songti SC', serif;
+
+/* System fonts stack */
+--font-system-cn: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+
+/* ============================
+   CSS Variables for Typography
+   ============================ */
+:root {
+  /* Font families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'Roboto Mono', 'Fira Code', 'Source Code Pro', monospace;
+  
+  /* Chinese fonts */
+  --font-cn-sans: 'Noto Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-cn-serif: 'Noto Serif SC', 'Source Han Serif CN', 'Songti SC', serif;
+  
+  /* Default text */
+  --font-body: var(--font-cn-sans);
+  --font-heading: var(--font-cn-sans);
+  
+  /* Font sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+  --text-4xl: 32px;
+  --text-5xl: 36px;
+  --text-6xl: 48px;
+  --text-7xl: 64px;
+  
+  /* Font weights */
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+  
+  /* Line heights */
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Letter spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+}

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConferencePub 会刊出版平台 - 产品功能说明书</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8; 
+            color: #333;
+            padding: 40px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { 
+            font-size: 32px; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            color: #1a1a1a;
+        }
+        h2 { 
+            font-size: 24px; 
+            margin: 40px 0 20px; 
+            padding-bottom: 10px;
+            border-bottom: 2px solid #A259FF;
+            color: #1a1a1a;
+        }
+        h3 { 
+            font-size: 18px; 
+            margin: 25px 0 12px; 
+            color: #333;
+        }
+        p { margin-bottom: 12px; }
+        ul, ol { margin-left: 24px; margin-bottom: 16px; }
+        li { margin-bottom: 6px; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        th, td { 
+            padding: 10px 12px; 
+            border: 1px solid #ddd; 
+            text-align: left;
+        }
+        th { background: #f5f5f5; font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+        code { 
+            background: #f0f0f0; 
+            padding: 2px 6px; 
+            border-radius: 3px; 
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+        }
+        .note { 
+            background: #fff8e1; 
+            padding: 12px 16px; 
+            border-left: 4px solid #ffc107; 
+            margin: 16px 0;
+        }
+        .info { 
+            background: #e3f2fd; 
+            padding: 12px 16px; 
+            border-left: 4px solid #2196f3; 
+            margin: 16px 0;
+        }
+        .header-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+        .section-number {
+            display: inline-block;
+            background: #A259FF;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        @media print {
+            body { padding: 20px; }
+            h2 { page-break-after: avoid; }
+            tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>ConferencePub 会刊出版平台<br><span style="font-size:18px;font-weight:normal;">产品功能说明书</span></h1>
+
+<div class="header-info">
+    <p>文档版本: 1.0 | 更新日期: 2026年2月23日</p>
+</div>
+
+<h2><span class="section-number">一</span>平台概述</h2>
+
+<p>ConferencePub 是一款面向会议组织方的全流程会刊出版SaaS平台，支持在线编辑、模板管理、团队审稿、印刷下单、电子书生成等一体化服务。</p>
+
+<div class="info">
+    <strong>核心价值：</strong>一站式服务 | 灵活模板 | 团队协作 | 智能定价
+</div>
+
+<h3>技术架构</h3>
+<table>
+    <tr><th>组件</th><th>技术</th><th>地址</th></tr>
+    <tr><td>前端</td><td>Next.js 14</td><td>localhost:3000</td></tr>
+    <tr><td>后端</td><td>NestJS</td><td>localhost:3001</td></tr>
+    <tr><td>数据库</td><td>PostgreSQL</td><td>localhost:5433</td></tr>
+</table>
+
+<h2><span class="section-number">二</span>用户体系</h2>
+
+<h3>用户角色与权限</h3>
+<table>
+    <tr><th>角色</th><th>默认积分</th><th>年付价格</th><th>说明</th></tr>
+    <tr><td>普通用户 (member)</td><td>200</td><td>-</td><td>初始用户</td></tr>
+    <tr><td>高级用户 (senior_member)</td><td>500</td><td>¥1499</td><td>付费用户</td></tr>
+    <tr><td>超级用户 (super_member)</td><td>1000</td><td>¥2999</td><td>VIP用户</td></tr>
+    <tr><td>印刷厂 (printer_staff)</td><td>-</td><td>-</td><td>印刷厂工作人员</td></tr>
+    <tr><td>管理员 (admin)</td><td>-</td><td>-</td><td>系统管理员</td></tr>
+</table>
+
+<h2><span class="section-number">三</span>核心功能模块</h2>
+
+<h3>3.1 认证系统</h3>
+<ul>
+    <li>邮箱密码登录/注册</li>
+    <li>微信扫码登录</li>
+    <li>微信账号绑定</li>
+    <li>JWT token 认证</li>
+</ul>
+
+<h3>3.2 项目管理</h3>
+<ul>
+    <li>创建/编辑/删除项目</li>
+    <li>项目状态: draft → editing → reviewing → finalizing → printing → completed</li>
+</ul>
+
+<h3>3.3 文档管理</h3>
+<ul>
+    <li>文档创建/编辑/删除</li>
+    <li>版本控制 (Revision)</li>
+    <li>文档状态: draft → review → frozen → printing</li>
+</ul>
+
+<h3>3.4 模板系统</h3>
+<p><strong>支持分类：</strong></p>
+<table>
+    <tr><th>分类</th><th>说明</th></tr>
+    <tr><td>conference_program</td><td>会议日程</td></tr>
+    <tr><td>abstract_book</td><td>论文摘要集</td></tr>
+    <tr><td>poster</td><td>海报</td></tr>
+    <tr><td>flyer</td><td>宣传单</td></tr>
+    <tr><td>brochure</td><td>宣传册</td></tr>
+    <tr><td>banner</td><td>横幅</td></tr>
+    <tr><td>business_card</td><td>名片</td></tr>
+    <tr><td>magazine</td><td>杂志</td></tr>
+    <tr><td>book</td><td>书籍</td></tr>
+    <tr><td>custom</td><td>自定义</td></tr>
+</table>
+
+<h3>3.5 审稿系统</h3>
+<ul>
+    <li>发起审稿 → 添加评论 → 评论标记/解决</li>
+</ul>
+
+<h3>3.6 资源管理</h3>
+<ul>
+    <li>文件上传 (图片/字体等)</li>
+    <li>预签名URL生成</li>
+</ul>
+
+<h3>3.7 导出系统</h3>
+<ul>
+    <li>HTML导出</li>
+    <li>PDF导出</li>
+</ul>
+
+<h2><span class="section-number">四</span>印刷系统</h2>
+
+<h3>4.1 印刷参数</h3>
+<table>
+    <tr><th>参数</th><th>选项</th></tr>
+    <tr><td>纸张类型</td><td>铜版纸、哑粉纸、双胶纸、特种纸、PVC等</td></tr>
+    <tr><td>纸张克重</td><td>50g - 400g</td></tr>
+    <tr><td>纸张尺寸</td><td>A0、A1、A2、A4、A5、16K、32K等</td></tr>
+    <tr><td>印刷颜色</td><td>黑白、单色、双彩、全彩</td></tr>
+    <tr><td>装订方式</td><td>胶装、骑马订、线圈装、索线胶装、硬壳精装等</td></tr>
+    <tr><td>后道工艺</td><td>覆膜、烫金、UV、压纹、冷裱等</td></tr>
+</table>
+
+<h3>4.2 价格计算</h3>
+<ul>
+    <li>默认定价 (无印刷厂定价时使用)</li>
+    <li>印刷厂自定义定价</li>
+    <li>平台加价: 默认15% (可配置)</li>
+    <li>数量折扣: 100本9折 / 500本8折 / 1000本7折</li>
+</ul>
+
+<div class="note">
+    <strong>价格流程：</strong>用户提交订单 → 计算预估价格(印刷厂单价×1.15) → 印刷厂确认 → 后台确认 → 用户支付
+</div>
+
+<h2><span class="section-number">五</span>电子书系统</h2>
+
+<h3>5.1 功能特性</h3>
+<ul>
+    <li>从项目文档生成电子书</li>
+    <li>响应式电子书 (支持CDN)</li>
+    <li>嵌入代码生成</li>
+    <li>积分消耗机制</li>
+    <li>过期续费引导</li>
+</ul>
+
+<h3>5.2 电子书价格</h3>
+<table>
+    <tr><th>时长</th><th>积分</th><th>说明</th></tr>
+    <tr><td>月付</td><td>100</td><td>1个月</td></tr>
+    <tr><td>年付</td><td>1000</td><td>12个月 (8折优惠)</td></tr>
+</table>
+
+<h3>5.3 查看模式</h3>
+<table>
+    <tr><th>模式</th><th>说明</th></tr>
+    <tr><td>📖 翻书模式</td><td>左右页面翻动效果，模拟真实书籍阅读</td></tr>
+    <tr><td>📄 PDF模式</td><td>平面滚动模式，类似传统PDF阅读</td></tr>
+</table>
+
+<h2><span class="section-number">六</span>通知与管理</h2>
+
+<h3>6.1 通知系统</h3>
+<ul>
+    <li>用户通知列表</li>
+    <li>标记已读/全部已读</li>
+    <li>批量发送通知 (按角色/分组)</li>
+    <li>通知模板管理</li>
+</ul>
+
+<h3>6.2 用户分组</h3>
+<ul>
+    <li>创建/编辑/删除用户分组</li>
+    <li>成员管理</li>
+    <li>按分组群发通知</li>
+</ul>
+
+<h3>6.3 字体管理</h3>
+<ul>
+    <li>用户字体上传</li>
+    <li>管理员审核 (批准/拒绝/删除)</li>
+    <li>字体侵权警告通知</li>
+</ul>
+
+<h2><span class="section-number">七</span>前端页面</h2>
+
+<h3>用户前端 (/apps/web)</h3>
+<table>
+    <tr><th>页面</th><th>路由</th></tr>
+    <tr><td>首页</td><td>/</td></tr>
+    <tr><td>功能介绍</td><td>/features</td></tr>
+    <tr><td>价格方案</td><td>/pricing</td></tr>
+    <tr><td>登录</td><td>/login</td></tr>
+    <tr><td>注册</td><td>/register</td></tr>
+    <tr><td>用户协议</td><td>/terms</td></tr>
+    <tr><td>隐私政策</td><td>/privacy</td></tr>
+    <tr><td>项目列表</td><td>/projects</td></tr>
+    <tr><td>项目详情</td><td>/projects/:id</td></tr>
+    <tr><td>文档编辑</td><td>/projects/:id/documents/:docId</td></tr>
+    <tr><td>通知中心</td><td>/notifications</td></tr>
+    <tr><td>用户分组</td><td>/admin/groups</td></tr>
+    <tr><td>字体管理</td><td>/admin/fonts</td></tr>
+    <tr><td>发送通知</td><td>/admin/notifications</td></tr>
+    <tr><td>我的电子书</td><td>/ebooks</td></tr>
+</table>
+
+<h2><span class="section-number">八</span>数据库模型</h2>
+
+<table>
+    <tr><th>模型</th><th>说明</th></tr>
+    <tr><td>Tenant</td><td>租户</td></tr>
+    <tr><td>User</td><td>用户</td></tr>
+    <tr><td>Project</td><td>项目</td></tr>
+    <tr><td>Document</td><td>文档</td></tr>
+    <tr><td>Revision</td><td>文档版本</td></tr>
+    <tr><td>Template</td><td>模板</td></tr>
+    <tr><td>PrintOrder</td><td>印刷订单</td></tr>
+    <tr><td>PrinterPricing</td><td>印刷厂定价</td></tr>
+    <tr><td>Ebook</td><td>电子书</td></tr>
+    <tr><td>Notification</td><td>通知</td></tr>
+    <tr><td>UserGroup</td><td>用户分组</td></tr>
+    <tr><td>PointTransaction</td><td>积分交易</td></tr>
+    <tr><td>SystemSetting</td><td>系统设置</td></tr>
+    <tr><td>AuditLog</td><td>审计日志</td></tr>
+</table>
+
+<h2><span class="section-number">九</span>服务状态</h2>
+
+<table>
+    <tr><th>服务</th><th>地址</th><th>状态</th></tr>
+    <tr><td>前端</td><td>http://localhost:3000</td><td>✅ 运行中</td></tr>
+    <tr><td>后端</td><td>http://localhost:3001</td><td>✅ 运行中</td></tr>
+    <tr><td>印刷厂</td><td>http://localhost:3005</td><td>✅ 运行中</td></tr>
+    <tr><td>数据库</td><td>localhost:5433</td><td>✅ 运行中</td></tr>
+</table>
+
+<h2><span class="section-number">十</span>测试账号</h2>
+
+<table>
+    <tr><th>项目</th><th>值</th></tr>
+    <tr><td>租户ID</td><td>cmlyijqqp0000r848bnoihqi6</td></tr>
+    <tr><td>用户邮箱</td><td>admin@demo.com</td></tr>
+    <tr><td>密码</td><td>password123</td></tr>
+    <tr><td>初始积分</td><td>200</td></tr>
+</table>
+
+<hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+
+<p style="text-align: center; color: #666; font-size: 14px;">
+    <strong>文档结束</strong><br>
+    本文档最终解释权归 ConferencePub 所有
+</p>
+
+</body>
+</html>
