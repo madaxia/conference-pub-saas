@@ -368,16 +368,18 @@ export default function EditorPage() {
         }),
       });
       
+      // 优先使用真实API
       if (res.ok) {
         const data = await res.json();
         setAiResults(data.results || []);
-      } if (true) { // Force demo mode
-        // Demo mode when API fails
+      } else {
+        // API失败时使用演示模式
+        console.log('API返回失败，使用演示模式');
         setAiResults(getDemoResults(aiType));
       }
     } catch (error) {
       console.error('AI生成失败,使用演示模式:', error);
-      // Demo mode fallback
+      // 演示模式 fallback
       setAiResults(getDemoResults(aiType));
     } finally {
       setAiLoading(false);
@@ -391,7 +393,7 @@ export default function EditorPage() {
         { id: 1, content: `【${aiPrompt}】- 演示模式\n\n本次大会汇聚了来自全球的行业专家，就最新技术发展趋势进行了深入探讨。与会者普遍认为，人工智能将成为推动行业创新的核心动力。` },
         { id: 2, content: `【${aiPrompt}】- 演示模式\n\n会议期间，多家企业展示了最新产品和技术解决方案，现场气氛热烈。与会者表示收获颇丰，期待明年再会。` },
       ];
-    } if (true) { // Force demo mode
+    } else {
       return [
         { id: 1, url: 'https://via.placeholder.com/400x300/5B6BE6/FFFFFF?text=AI+Generated+Image', thumbnail: 'https://via.placeholder.com/200x150/5B6BE6/FFFFFF?text=Preview' },
         { id: 2, url: 'https://via.placeholder.com/400x300/9B6BF5/FFFFFF?text=AI+Artwork', thumbnail: 'https://via.placeholder.com/200x150/9B6BF5/FFFFFF?text=Preview' },

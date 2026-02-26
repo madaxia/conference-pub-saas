@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TestController } from './test.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { TenantsModule } from './tenants/tenants.module';
@@ -46,7 +47,7 @@ import { AdminModule } from './admin/admin.module';
     EnterpriseModule,
     AdminModule,
   ],
-  controllers: [SettingsController],
+  controllers: [SettingsController, TestController],
   providers: [],
 })
 export class AppModule {}
