@@ -5,16 +5,19 @@ import { AIService } from './ai.service';
 export class AIController {
   constructor(private aiService: AIService) {}
 
+  // 公开端点 - 无需认证
   @Get('settings')
   async getSettings() {
     return this.aiService.getAISettings();
   }
 
+  // 公开端点 - 无需认证
   @Post('settings')
   async updateSettings(@Body() data: { model?: string; apiKey?: string }) {
     return this.aiService.updateAISettings(data);
   }
 
+  // 公开端点 - 无需认证
   @Post('generate-text')
   async generateText(
     @Body() data: { prompt: string; type?: 'title' | 'content' | 'description' }
@@ -22,6 +25,7 @@ export class AIController {
     return this.aiService.generateText(data.prompt, data.type || 'content');
   }
 
+  // 公开端点 - 无需认证
   @Post('generate-image')
   async generateImage(
     @Body() data: { prompt: string; style?: 'realistic' | 'illustration' | 'simple' }
