@@ -265,3 +265,32 @@ export const ProjectStatusOrder: ProjectStatus[] = [
   'printing',
   'completed',
 ];
+
+// ==================== CMYK 转换 ====================
+
+/**
+ * 将 RGB 转换为 CMYK
+ * 用于印刷厂打印
+ */
+export function rgbToCmyk(r: number, g: number, b: number): { c: number; m: number; y: number; k: number } {
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+  const k = 1 - Math.max(rNorm, gNorm, bNorm);
+  if (k === 1) return { c: 0, m: 0, y: 0, k: 1 };
+  const c = (1 - rNorm - k) / (1 - k);
+  const m = (1 - gNorm - k) / (1 - k);
+  const y = (1 - bNorm - k) / (1 - k);
+  return { c: Math.round(c * 100) / 100, m: Math.round(m * 100) / 100, y: Math.round(y * 100) / 100, k: Math.round(k * 100) / 100 };
+}
+
+/**
+ * 将十六进制颜色转换为 CMYK
+ */
+export function hexToCmyk(hex: string): { c: number; m: number; y: number; k: number } {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return rgbToCmyk(r, g, b);
+}

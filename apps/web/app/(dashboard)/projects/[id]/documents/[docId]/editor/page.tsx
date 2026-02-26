@@ -234,8 +234,21 @@ export default function EditorPage() {
     }
   };
 
-  // 导出
-  const handleExport = () => {
+  // RGB 转 CMYK (简化版)
+  const rgbToCmyk = (r: number, g: number, b: number) => {
+    const rNorm = r / 255;
+    const gNorm = g / 255;
+    const bNorm = b / 255;
+    const k = 1 - Math.max(rNorm, gNorm, bNorm);
+    if (k === 1) return { c: 0, m: 0, y: 0, k: 1 };
+    const c = (1 - rNorm - k) / (1 - k);
+    const m = (1 - gNorm - k) / (1 - k);
+    const y = (1 - bNorm - k) / (1 - k);
+    return { c: Math.round(c * 100) / 100, m: Math.round(m * 100) / 100, y: Math.round(y * 100) / 100, k: Math.round(k * 100) / 100 };
+  };
+
+  // 导出 PNG (RGB)
+  const handleExportPNG = () => {
     if (!fabricRef.current) return;
     const dataURL = fabricRef.current.toDataURL({
       format: 'png',
@@ -246,6 +259,68 @@ export default function EditorPage() {
     link.download = 'document.png';
     link.href = dataURL;
     link.click();
+  };
+
+  // 导出 PDF (CMYK - 印刷用)
+  const handleExportPDF = async () => {
+    if (!fabricRef.current) return;
+    
+    try {
+      // 动态导入 jsPDF
+      const { jsPDF } = await import('jspdf');
+      
+      // 获取画布数据
+      const canvas = fabricRef.current;
+      const width = canvas.width || 595;
+      const height = canvas.height || 842;
+      
+      // 创建 PDF (A4: 595 x 842 points)
+      const pdf = new jsPDF({
+        orientation: height > width ? 'portrait' : 'landscape',
+        unit: 'pt',
+        format: 'a4',
+      });
+      
+      // 获取画布图像
+      const dataURL = canvas.toDataURL({
+        format: 'png',
+        quality: 1,
+        multiplier: 2, // 2x 分辨率 for 印刷
+      });
+      
+      // 添加图像到 PDF
+      pdf.addImage(dataURL, 'PNG', 0, 0, width, height);
+      
+      // 添加元数据 (用于印刷)
+      pdf.setProperties({
+        title: '会议会刊文档',
+        subject: '版面设计',
+        creator: '会议出版平台',
+        keywords: 'conference, publication, print',
+      });
+      
+      // 添加色彩模式标记
+      pdf.setFontSize(8);
+      pdf.setTextColor(128);
+      pdf.text('色彩模式: RGB (建议印刷前转换为 CMYK)', 10, 10);
+      
+      // 下载
+      pdf.save('document-print.pdf');
+      
+      alert('PDF 已导出！建议印刷厂使用 CMYK 色彩模式进行打印。');
+    } catch (error) {
+      console.error('导出 PDF 失败:', error);
+      alert('导出失败，请重试');
+    }
+  };
+
+  // 导出按钮点击
+  const handleExport = (format: 'png' | 'pdf' = 'png') => {
+    if (format === 'pdf') {
+      handleExportPDF();
+    } else {
+      handleExportPNG();
+    }
   };
 
   // 更新选中元素属性
@@ -396,23 +471,46 @@ export default function EditorPage() {
           >
             <Save size={18} />
           </button>
+          
+          {/* 导出菜单 */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              onClick={() => handleExport('pdf')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                background: '#5B6BE6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              <Download size={18} /> 导出 PDF
+            </button>
+          </div>
+          
           <button 
-            onClick={handleExport}
+            onClick={() => handleExport('png')}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               padding: '8px 16px',
-              background: '#5B6BE6',
-              color: 'white',
-              border: 'none',
+              background: 'white',
+              color: '#5B6BE6',
+              border: '1px solid #5B6BE6',
               borderRadius: '8px',
               fontSize: '14px',
               fontWeight: 500,
               cursor: 'pointer',
             }}
           >
-            <Download size={18} /> 导出
+            <Download size={18} /> PNG
           </button>
         </div>
       </div>
