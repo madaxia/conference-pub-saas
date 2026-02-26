@@ -21,11 +21,11 @@ interface NavItem {
 }
 
 const portalNavItems: NavItem[] = [
-  { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} color="rgb(91, 107, 230)" /> },
-  { name: '订单管理', href: '/orders', icon: <Printer size={18} color="rgb(91, 107, 230)" /> },
-  { name: '打印机', href: '/printers', icon: <Printer size={18} color="rgb(91, 107, 230)" /> },
-  { name: '申请审批', href: '/applications', icon: <FileText size={18} color="rgb(91, 107, 230)" /> },
-  { name: '设置', href: '/settings', icon: <Settings size={18} color="rgb(91, 107, 230)" /> },
+  { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
+  { name: '订单管理', href: '/orders', icon: <Printer size={18} /> },
+  { name: '打印机', href: '/printers', icon: <Printer size={18} /> },
+  { name: '申请审批', href: '/applications', icon: <FileText size={18} /> },
+  { name: '设置', href: '/settings', icon: <Settings size={18} /> },
 ];
 
 interface PortalLayoutProps {
@@ -42,9 +42,9 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB' }}>
+    <div className="portal-layout" style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB' }}>
       {/* Sidebar */}
-      <aside style={{
+      <aside className="portal-sidebar" style={{
         width: '260px',
         background: '#FFFFFF',
         borderRight: '1px solid #E2E8F0',
@@ -55,7 +55,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         zIndex: 100,
       }}>
         {/* Logo */}
-        <div style={{ padding: '20px', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="portal-logo-area" style={{ padding: '20px', borderBottom: '1px solid #E2E8F0' }}>
           <Link href="/dashboard" style={{
             display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none'
           }}>
@@ -75,10 +75,12 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+        <nav className="portal-nav" style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
           {portalNavItems.map((item) => {
+            // Fix: For root-level items, only match exact
+            // For sub-items like /dashboard/orders, match if starts with href + '/'
             const isExactMatch = pathname === item.href;
-            const isChildMatch = item.href !== '/' && pathname.startsWith(item.href + '/');
+            const isChildMatch = item.href.split('/').length > 2 && pathname.startsWith(item.href + '/');
             const isActive = isExactMatch || isChildMatch;
             return (
               <Link
@@ -99,7 +101,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
                   fontSize: '14px'
                 }}
               >
-                <span style={{ display: 'flex', alignItems: 'center', color: 'inherit' }}>{item.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', color: isActive ? '#FFFFFF' : 'rgb(91, 107, 230)' }}>{item.icon}</span>
                 <span>{item.name}</span>
               </Link>
             );
@@ -107,14 +109,14 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         </nav>
 
         {/* User Info */}
-        <div style={{ padding: '20px', borderTop: '1px solid #E2E8F0' }}>
+        <div className="portal-user-area" style={{ padding: '20px', borderTop: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div style={{
               width: '40px', height: '40px',
               background: '#E8EAFC',
               borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', color: '#5B6BE6'
+              fontSize: '16px', color: 'rgb(91, 107, 230)'
             }}>
               <Printer size={18} />
             </div>
@@ -129,7 +131,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
               width: '100%', padding: '10px',
               background: 'transparent',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px', color: '#718096',
+              borderRadius: '8px', color: 'rgb(91, 107, 230)',
               fontSize: '14px', cursor: 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
@@ -141,9 +143,9 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, marginLeft: '260px', minHeight: '100vh' }}>
+      <main className="portal-main" style={{ flex: 1, marginLeft: '260px', minHeight: '100vh' }}>
         {/* Top Header */}
-        <header style={{
+        <header className="portal-header" style={{
           height: '64px',
           background: '#FFFFFF',
           borderBottom: '1px solid #E2E8F0',
@@ -162,7 +164,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
             borderRadius: '8px', width: '320px',
             border: '1px solid #E2E8F0'
           }}>
-            <span style={{ color: '#A0AEC0', fontSize: '14px' }}><Search size={16} /></span>
+            <span style={{ color: 'rgb(91, 107, 230)', fontSize: '14px' }}><Search size={16} /></span>
             <input
               type="text"
               placeholder="搜索订单、打印机..."
@@ -178,7 +180,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
             <button style={{
               width: '40px', height: '40px',
               background: '#F5F7FB', border: '1px solid #E2E8F0',
-              borderRadius: '8px', color: '#718096', fontSize: '16px',
+              borderRadius: '8px', color: 'rgb(91, 107, 230)', fontSize: '16px',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}><Bell size={18} /></button>
             <button style={{
@@ -191,7 +193,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <div style={{ padding: '32px' }}>
+        <div className="portal-content" style={{ padding: '32px' }}>
           {children}
         </div>
       </main>

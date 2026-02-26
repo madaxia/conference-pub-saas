@@ -35,9 +35,9 @@ export default function PricingPage() {
   ];
 
   return (
-    <div style={{ background: '#F5F7FB', minHeight: '100vh' }}>
+    <div className="pricing-page" style={{ background: '#F5F7FB', minHeight: '100vh' }}>
       {/* Header */}
-      <header style={{
+      <header className="pricing-header" style={{
         padding: '20px 48px',
         background: 'white',
         borderBottom: '1px solid #E2E8F0',
@@ -107,7 +107,7 @@ export default function PricingPage() {
               <ul style={{ textAlign: 'left', marginBottom: '24px', listStyle: 'none', padding: 0 }}>
                 {plan.features.map((feature, i) => (
                   <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', fontSize: '14px', color: '#2D3748' }}>
-                    <Check size={16} style={{ color: '#4ECB71' }} /> {feature}
+                    <Check size={16} style={{ color: 'rgb(91, 107, 230)' }} /> {feature}
                   </li>
                 ))}
               </ul>

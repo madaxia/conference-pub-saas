@@ -12,7 +12,7 @@ export default function Page() {
         <p style={{ color: '#718096', fontSize: 14 }}>管理积分规则</p>
       </div>
       <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#718096' }}>
-        <CreditCard size={48} style={{ color: '#FFB347', marginBottom: 16 }} />
+        <CreditCard size={48} style={{ color: 'rgb(91, 107, 230)', marginBottom: 16 }} />
         <div>积分配置内容</div>
       </div>
     </div>

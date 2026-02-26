@@ -41,8 +41,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F7FB', padding: '20px' }}>
-      <div style={{ width: '100%', maxWidth: '420px', background: 'white', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+    <div className="register-page" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F7FB', padding: '20px' }}>
+      <div className="register-card" style={{ width: '100%', maxWidth: '420px', background: 'white', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ width: '56px', height: '56px', background: 'linear-gradient(135deg, #5B6BE6 0%, #9B6BF5 100%)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'white' }}><Book size={28} /></div>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>创建账号</h1>

@@ -21,9 +21,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div style={{ background: '#F5F7FB', minHeight: '100vh' }}>
+    <div className="landing-page" style={{ background: '#F5F7FB', minHeight: '100vh' }}>
       {/* Navigation */}
-      <nav style={{
+      <nav className="landing-nav" style={{
         position: 'fixed',
         top: 0,
         left: 0,
@@ -70,7 +70,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section style={{
+      <section className="landing-hero" style={{
         padding: '180px 48px 100px',
         textAlign: 'center',
         maxWidth: '1200px',
@@ -125,7 +125,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section style={{
+      <section className="landing-hero" style={{
         padding: '80px 48px',
         background: 'white',
       }}>
@@ -179,7 +179,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section style={{
+      <section className="landing-hero" style={{
         padding: '100px 48px',
         textAlign: 'center',
       }}>

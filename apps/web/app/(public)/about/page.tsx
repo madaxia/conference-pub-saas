@@ -5,7 +5,7 @@ import { Book, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div style={{ background: '#F5F7FB', minHeight: '100vh' }}>
+    <div className="about-page" style={{ background: '#F5F7FB', minHeight: '100vh' }}>
       {/* Header */}
       <header style={{
         padding: '20px 48px',

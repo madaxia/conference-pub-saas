@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div>
-        <div style={{ marginBottom: '32px' }}>
+        <div className="admin-page-header" style={{ marginBottom: '32px' }}>
           <div style={{ height: '32px', width: '150px', background: '#E2E8F0', borderRadius: '6px', marginBottom: '8px' }}></div>
           <div style={{ height: '20px', width: '200px', background: '#E2E8F0', borderRadius: '6px' }}></div>
         </div>
@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       {/* Page Header */}
-      <div style={{ marginBottom: '32px' }}>
+      <div className="admin-page-header" style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>
           管理后台
         </h1>
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         gap: '16px',
         marginBottom: '32px'
       }}>
-        {/* Users - Blue */}
+        {/* Users */}
         <div style={{
           background: '#FFFFFF',
           borderRadius: '12px',
@@ -110,11 +110,11 @@ export default function AdminDashboardPage() {
         }}>
           <div style={{
             width: '48px', height: '48px',
-            background: '#E3F2FD',
+            background: '#E8EAFC',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#5B8DEF'
+            color: 'rgb(91, 107, 230)'
           }}><Users size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalUsers}
@@ -122,7 +122,7 @@ export default function AdminDashboardPage() {
           <div style={{ fontSize: '13px', color: '#718096' }}>用户总数</div>
         </div>
 
-        {/* Projects - Purple */}
+        {/* Projects */}
         <div style={{
           background: '#FFFFFF',
           borderRadius: '12px',
@@ -131,11 +131,11 @@ export default function AdminDashboardPage() {
         }}>
           <div style={{
             width: '48px', height: '48px',
-            background: '#F3EEFF',
+            background: '#E8EAFC',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#9B6BF5'
+            color: 'rgb(91, 107, 230)'
           }}><Folder size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalProjects}
@@ -143,7 +143,7 @@ export default function AdminDashboardPage() {
           <div style={{ fontSize: '13px', color: '#718096' }}>项目总数</div>
         </div>
 
-        {/* Orders - Green */}
+        {/* Orders */}
         <div style={{
           background: '#FFFFFF',
           borderRadius: '12px',
@@ -152,11 +152,11 @@ export default function AdminDashboardPage() {
         }}>
           <div style={{
             width: '48px', height: '48px',
-            background: '#E8F8F0',
+            background: '#E8EAFC',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#4ECB71'
+            color: 'rgb(91, 107, 230)'
           }}><Printer size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalOrders}
@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
           <div style={{ fontSize: '13px', color: '#718096' }}>订单总数</div>
         </div>
 
-        {/* Ebooks - Orange */}
+        {/* Ebooks */}
         <div style={{
           background: '#FFFFFF',
           borderRadius: '12px',
@@ -173,11 +173,11 @@ export default function AdminDashboardPage() {
         }}>
           <div style={{
             width: '48px', height: '48px',
-            background: '#FFF3E6',
+            background: '#E8EAFC',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#FFB347'
+            color: 'rgb(91, 107, 230)'
           }}><Book size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalEbooks}
@@ -198,14 +198,14 @@ export default function AdminDashboardPage() {
         </h2>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-          <a href="/admin/users" style={{
+          <a className="admin-action-item" href="/admin/users" style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
             padding: '20px', background: '#F8FAFC', borderRadius: '12px',
             textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <div style={{
               width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5B6BE6'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(91, 107, 230)'
             }}><Users size={24} /></div>
             <span style={{ fontSize: '14px', color: '#2D3748' }}>用户管理</span>
           </a>
@@ -216,8 +216,8 @@ export default function AdminDashboardPage() {
             textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <div style={{
-              width: '48px', height: '48px', background: '#F3EEFF', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B6BF5'
+              width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(91, 107, 230)'
             }}><Folder size={24} /></div>
             <span style={{ fontSize: '14px', color: '#2D3748' }}>项目管理</span>
           </a>
@@ -228,8 +228,8 @@ export default function AdminDashboardPage() {
             textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <div style={{
-              width: '48px', height: '48px', background: '#E8F8F0', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ECB71'
+              width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(91, 107, 230)'
             }}><Printer size={24} /></div>
             <span style={{ fontSize: '14px', color: '#2D3748' }}>订单管理</span>
           </a>
@@ -240,8 +240,8 @@ export default function AdminDashboardPage() {
             textDecoration: 'none', transition: 'all 0.2s'
           }}>
             <div style={{
-              width: '48px', height: '48px', background: '#FFF3E6', borderRadius: '12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFB347'
+              width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(91, 107, 230)'
             }}><Settings size={24} /></div>
             <span style={{ fontSize: '14px', color: '#2D3748' }}>系统设置</span>
           </a>

@@ -12,7 +12,7 @@ export default function Page() {
         <p style={{ color: '#718096', fontSize: 14 }}>配置系统参数</p>
       </div>
       <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#718096' }}>
-        <Settings size={48} style={{ color: '#FFB347', marginBottom: 16 }} />
+        <Settings size={48} style={{ color: 'rgb(91, 107, 230)', marginBottom: 16 }} />
         <div>系统设置内容</div>
       </div>
     </div>

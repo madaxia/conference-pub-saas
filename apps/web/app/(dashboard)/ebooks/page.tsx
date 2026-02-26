@@ -114,7 +114,7 @@ export default function EbooksPage() {
             display: 'flex', alignItems: 'center', gap: '8px',
             padding: '10px 16px', background: '#FFF3E6', borderRadius: '8px'
           }}>
-            <CreditCard size={18} style={{ color: '#FFB347' }} />
+            <CreditCard size={18} style={{ color: 'rgb(91, 107, 230)' }} />
             <span style={{ color: '#2D3748', fontWeight: 600 }}>{userPoints}</span>
             <span style={{ color: '#718096', fontSize: '13px' }}>积分</span>
           </div>
@@ -151,7 +151,7 @@ export default function EbooksPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div style={{
                     width: '48px', height: '48px', background: '#F3EEFF', borderRadius: '12px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B6BF5'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgb(91, 107, 230)'
                   }}>
                     <Book size={24} />
                   </div>

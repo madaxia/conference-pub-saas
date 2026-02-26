@@ -24,27 +24,27 @@ interface NavItem {
 }
 
 const userNavItems: NavItem[] = [
-  { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} color="rgb(91, 107, 230)" /> },
-  { name: '项目', href: '/projects', icon: <Folder size={18} color="rgb(91, 107, 230)" /> },
-  { name: '电子书', href: '/ebooks', icon: <Book size={18} color="rgb(91, 107, 230)" /> },
-  { name: '积分', href: '/points', icon: <DollarSign size={18} color="rgb(91, 107, 230)" /> },
-  { name: '通知', href: '/notifications', icon: <Bell size={18} color="rgb(91, 107, 230)" /> },
-  { name: '企业', href: '/enterprise', icon: <Building2 size={18} color="rgb(91, 107, 230)" /> },
+  { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
+  { name: '项目', href: '/projects', icon: <Folder size={18} /> },
+  { name: '电子书', href: '/ebooks', icon: <Book size={18} /> },
+  { name: '积分', href: '/points', icon: <DollarSign size={18} /> },
+  { name: '通知', href: '/notifications', icon: <Bell size={18} /> },
+  { name: '企业', href: '/enterprise', icon: <Building2 size={18} /> },
 ];
 
 const adminNavItems: NavItem[] = [
-  { name: '仪表盘', href: '/admin', icon: <LayoutDashboard size={18} color="rgb(91, 107, 230)" /> },
-  { name: '用户', href: '/admin/users', icon: <User size={18} color="rgb(91, 107, 230)" /> },
-  { name: '项目', href: '/admin/projects', icon: <Folder size={18} color="rgb(91, 107, 230)" /> },
-  { name: '订单', href: '/admin/orders', icon: <Printer size={18} color="rgb(91, 107, 230)" /> },
-  { name: '电子书', href: '/admin/ebooks', icon: <Book size={18} color="rgb(91, 107, 230)" /> },
-  { name: '字体', href: '/admin/fonts', icon: <Settings size={18} color="rgb(91, 107, 230)" /> },
-  { name: '分组', href: '/admin/groups', icon: <User size={18} color="rgb(91, 107, 230)" /> },
-  { name: '通知', href: '/admin/notifications', icon: <Bell size={18} color="rgb(91, 107, 230)" /> },
-  { name: '印刷厂', href: '/admin/printers', icon: <Printer size={18} color="rgb(91, 107, 230)" /> },
-  { name: 'AI设置', href: '/admin/ai-settings', icon: <Settings size={18} color="rgb(91, 107, 230)" /> },
-  { name: '设置', href: '/admin/settings', icon: <Settings size={18} color="rgb(91, 107, 230)" /> },
-  { name: '企业', href: '/admin/enterprise', icon: <Building2 size={18} color="rgb(91, 107, 230)" /> },
+  { name: '仪表盘', href: '/admin', icon: <LayoutDashboard size={18} /> },
+  { name: '用户', href: '/admin/users', icon: <User size={18} /> },
+  { name: '项目', href: '/admin/projects', icon: <Folder size={18} /> },
+  { name: '订单', href: '/admin/orders', icon: <Printer size={18} /> },
+  { name: '电子书', href: '/admin/ebooks', icon: <Book size={18} /> },
+  { name: '字体', href: '/admin/fonts', icon: <Settings size={18} /> },
+  { name: '分组', href: '/admin/groups', icon: <User size={18} /> },
+  { name: '通知', href: '/admin/notifications', icon: <Bell size={18} /> },
+  { name: '印刷厂', href: '/admin/printers', icon: <Printer size={18} /> },
+  { name: 'AI设置', href: '/admin/ai-settings', icon: <Settings size={18} /> },
+  { name: '设置', href: '/admin/settings', icon: <Settings size={18} /> },
+  { name: '企业', href: '/admin/enterprise', icon: <Building2 size={18} /> },
 ];
 
 interface DashboardLayoutProps {
@@ -63,9 +63,9 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB' }}>
+    <div className="dashboard-layout" style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB' }}>
       {/* Sidebar */}
-      <aside style={{
+      <aside className="dashboard-sidebar" style={{
         width: '260px',
         background: '#FFFFFF',
         borderRight: '1px solid #E2E8F0',
@@ -76,7 +76,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
         zIndex: 100,
       }}>
         {/* Logo */}
-        <div style={{ padding: '20px', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="dashboard-logo-area" style={{ padding: '20px', borderBottom: '1px solid #E2E8F0' }}>
           <Link href={isAdmin ? '/admin' : '/dashboard'} style={{
             display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none'
           }}>
@@ -96,12 +96,12 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
         </div>
 
         {/* Navigation */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+        <nav className="dashboard-nav" style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
           {navItems.map((item) => {
-            // Fix: Only match exact path or direct child (with trailing slash)
-            // /admin should NOT match /admin/users
-            const isExactMatch = pathname === item.href || pathname === item.href + '/';
-            const isChildMatch = item.href !== '/' && pathname.startsWith(item.href + '/') && pathname.charAt(item.href.length) === '/';
+            // Fix: For root-level items like /admin, only match exact
+            // For sub-items like /admin/users, match if starts with href + '/'
+            const isExactMatch = pathname === item.href;
+            const isChildMatch = item.href.split('/').length > 2 && pathname.startsWith(item.href + '/');
             const isActive = isExactMatch || isChildMatch;
             return (
               <Link
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
                   fontSize: '14px'
                 }}
               >
-                <span style={{ display: 'flex', alignItems: 'center', color: 'inherit' }}>{item.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', color: isActive ? '#FFFFFF' : 'rgb(91, 107, 230)' }}>{item.icon}</span>
                 <span>{item.name}</span>
               </Link>
             );
@@ -130,14 +130,14 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
         </nav>
 
         {/* User Info */}
-        <div style={{ padding: '20px', borderTop: '1px solid #E2E8F0' }}>
+        <div className="dashboard-user-area" style={{ padding: '20px', borderTop: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div style={{
               width: '40px', height: '40px',
               background: '#E8EAFC',
               borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', color: '#5B6BE6'
+              fontSize: '16px', color: 'rgb(91, 107, 230)'
             }}>
               <User size={18} />
             </div>
@@ -152,7 +152,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
               width: '100%', padding: '10px',
               background: 'transparent',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px', color: '#718096',
+              borderRadius: '8px', color: 'rgb(91, 107, 230)',
               fontSize: '14px', cursor: 'pointer',
               transition: 'all 0.2s ease',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
@@ -164,9 +164,9 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, marginLeft: '260px', minHeight: '100vh' }}>
+      <main className="dashboard-main" style={{ flex: 1, marginLeft: '260px', minHeight: '100vh' }}>
         {/* Top Header */}
-        <header style={{
+        <header className="dashboard-header" style={{
           height: '64px',
           background: '#FFFFFF',
           borderBottom: '1px solid #E2E8F0',
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
             borderRadius: '8px', width: '320px',
             border: '1px solid #E2E8F0'
           }}>
-            <span style={{ color: '#A0AEC0', fontSize: '14px' }}><Search size={16} /></span>
+            <span style={{ color: 'rgb(91, 107, 230)', fontSize: '14px' }}><Search size={16} /></span>
             <input
               type="text"
               placeholder="搜索项目、文档..."
@@ -201,7 +201,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
             <button style={{
               width: '40px', height: '40px',
               background: '#F5F7FB', border: '1px solid #E2E8F0',
-              borderRadius: '8px', color: '#718096', fontSize: '16px',
+              borderRadius: '8px', color: 'rgb(91, 107, 230)', fontSize: '16px',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}><Bell size={18} /></button>
             <button style={{
@@ -214,7 +214,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
         </header>
 
         {/* Page Content */}
-        <div style={{ padding: '32px' }}>
+        <div className="dashboard-content" style={{ padding: '32px' }}>
           {children}
         </div>
       </main>

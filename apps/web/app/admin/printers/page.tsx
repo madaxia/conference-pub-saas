@@ -12,7 +12,7 @@ export default function Page() {
         <p style={{ color: '#718096', fontSize: 14 }}>管理印刷供应商</p>
       </div>
       <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#718096' }}>
-        <Printer size={48} style={{ color: '#4ECB71', marginBottom: 16 }} />
+        <Printer size={48} style={{ color: 'rgb(91, 107, 230)', marginBottom: 16 }} />
         <div>暂无印刷厂数据</div>
       </div>
     </div>

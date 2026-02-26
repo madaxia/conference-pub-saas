@@ -140,7 +140,7 @@ export default function DashboardPage() {
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#5B8DEF'
+            color: 'rgb(91, 107, 230)'
           }}><Folder size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalProjects}
@@ -161,7 +161,7 @@ export default function DashboardPage() {
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#4ECB71'
+            color: 'rgb(91, 107, 230)'
           }}><Printer size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalOrders}
@@ -182,7 +182,7 @@ export default function DashboardPage() {
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#9B6BF5'
+            color: 'rgb(91, 107, 230)'
           }}><Book size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalEbooks}
@@ -203,7 +203,7 @@ export default function DashboardPage() {
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             marginBottom: '12px',
-            color: '#FFB347'
+            color: 'rgb(91, 107, 230)'
           }}><DollarSign size={24} /></div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '4px' }}>
             {stats.totalPoints}

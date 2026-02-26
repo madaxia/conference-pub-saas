@@ -38,9 +38,9 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div style={{ background: '#F5F7FB', minHeight: '100vh' }}>
+    <div className="features-page" style={{ background: '#F5F7FB', minHeight: '100vh' }}>
       {/* Header */}
-      <header style={{
+      <header className="features-header" style={{
         padding: '20px 48px',
         background: 'white',
         borderBottom: '1px solid #E2E8F0',

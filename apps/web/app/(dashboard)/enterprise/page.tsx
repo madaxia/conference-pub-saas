@@ -12,7 +12,7 @@ export default function Page() {
           <p style={{ fontSize: 14, color: '#718096' }}>申请企业账号，享受更多服务</p>
         </Link>
         <Link href="/enterprise/bind" style={{ display: 'block', padding: 32, background: 'white', borderRadius: 12, textDecoration: 'none' }}>
-          <Building2 size={32} style={{ color: '#4ECB71', marginBottom: 12 }} />
+          <Building2 size={32} style={{ color: 'rgb(91, 107, 230)', marginBottom: 12 }} />
           <h3 style={{ fontSize: 16, fontWeight: 600, color: '#2D3748', marginBottom: 8 }}>绑定企业</h3>
           <p style={{ fontSize: 14, color: '#718096' }}>已有企业账号？立即绑定</p>
         </Link>

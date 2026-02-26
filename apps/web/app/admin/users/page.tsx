@@ -54,7 +54,7 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px' }}>
+      <div className="users-page" style={{ padding: '24px' }}>
         <div style={{ height: '200px', background: 'white', borderRadius: '12px', animation: 'shimmer 1.5s infinite' }}></div>
         <style jsx>{`@keyframes shimmer { 0% { opacity: 1 } 50% { opacity: 0.5 } 100% { opacity: 1 } }`}</style>
       </div>
@@ -62,9 +62,9 @@ export default function UsersPage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="users-page" style={{ padding: '24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className="users-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>用户管理</h1>
           <p style={{ color: '#718096', fontSize: '14px' }}>管理系统用户和权限</p>
@@ -75,7 +75,7 @@ export default function UsersPage() {
       </div>
 
       {/* Search */}
-      <div style={{ marginBottom: '24px' }}>
+      <div className="users-search" style={{ marginBottom: '24px' }}>
         <div style={{ position: 'relative', maxWidth: '400px' }}>
           <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
           <input
@@ -89,8 +89,8 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="users-table-container" style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC' }}>
               <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#718096' }}>用户</th>

@@ -74,8 +74,8 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success': return <CheckCircle size={20} style={{ color: '#4ECB71' }} />;
-      case 'warning': return <AlertCircle size={20} style={{ color: '#FFB347' }} />;
+      case 'success': return <CheckCircle size={20} style={{ color: 'rgb(91, 107, 230)' }} />;
+      case 'warning': return <AlertCircle size={20} style={{ color: 'rgb(91, 107, 230)' }} />;
       case 'error': return <AlertCircle size={20} style={{ color: '#F4726B' }} />;
       default: return <Mail size={20} style={{ color: '#5B6BE6' }} />;
     }

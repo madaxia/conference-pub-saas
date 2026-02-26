@@ -42,10 +42,10 @@ export default function ProjectsPage() {
     return <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', background: s.bg, color: s.color }}>{s.text}</span>;
   };
 
-  if (loading) return <div style={{ padding: '24px' }}><div style={{ height: '200px', background: 'white', borderRadius: '12px', animation: 'shimmer 1.5s infinite' }}></div></div>;
+  if (loading) return <div className="projects-page" style={{ padding: '24px' }}><div style={{ height: '200px', background: 'white', borderRadius: '12px', animation: 'shimmer 1.5s infinite' }}></div></div>;
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="projects-page" style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div><h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>项目管理</h1><p style={{ color: '#718096', fontSize: '14px' }}>管理所有会刊项目</p></div>
         <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', background: '#5B6BE6', color: 'white', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}><Plus size={18} /> 创建项目</button>
@@ -53,7 +53,7 @@ export default function ProjectsPage() {
       <div style={{ marginBottom: '24px' }}>
         <div style={{ position: 'relative', maxWidth: '400px' }}><Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} /><input type="text" placeholder="搜索项目..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '12px 12px 12px 40px', background: 'white', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '14px', outline: 'none' }} /></div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      <div className="projects-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
         {filtered.map(project => (
           <div key={project.id} style={{ background: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>

@@ -46,10 +46,10 @@ export default function OrdersPage() {
     return <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', background: s.bg, color: s.color }}>{s.text}</span>;
   };
 
-  if (loading) return <div style={{ padding: '24px' }}><div style={{ height: '200px', background: 'white', borderRadius: '12px', animation: 'shimmer 1.5s infinite' }}></div></div>;
+  if (loading) return <div className="orders-page" style={{ padding: '24px' }}><div style={{ height: '200px', background: 'white', borderRadius: '12px', animation: 'shimmer 1.5s infinite' }}></div></div>;
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="orders-page" style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>订单管理</h1>
         <p style={{ color: '#718096', fontSize: '14px' }}>管理所有印刷订单</p>
