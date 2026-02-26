@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#5B6BE6', fontSize: '14px', textDecoration: 'none' }}>返回用户登录</Link>
+          <Link href="/login" style={{ color: "rgb(91, 107, 230)", fontSize: '14px', textDecoration: 'none' }}>返回用户登录</Link>
         </div>
       </div>
     </div>

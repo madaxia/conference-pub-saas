@@ -76,7 +76,7 @@ export default function RegisterPage() {
           </button>
         </form>
         <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #E2E8F0', textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#5B6BE6', fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+          <Link href="/login" style={{ color: "rgb(91, 107, 230)", fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
             已有账号？立即登录 <ArrowRight size={14} />
           </Link>
         </div>

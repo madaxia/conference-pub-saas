@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <div style={{ background: '#F5F7FB', minHeight: '100vh', padding: '40px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto', background: 'white', borderRadius: '16px', padding: '40px' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: '#5B6BE6', marginBottom: '24px' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: "rgb(91, 107, 230)", marginBottom: '24px' }}>
           <Book size={20} /> 返回首页
         </Link>
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#2D3748', marginBottom: '24px' }}>服务条款</h1>

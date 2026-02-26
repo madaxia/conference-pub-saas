@@ -494,7 +494,7 @@ export default function EditorPage() {
           <button onClick={handleExportPDF} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#5B6BE6', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
             <Download size={18} /> 导出 PDF
           </button>
-          <button onClick={handleExportPNG} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'white', color: '#5B6BE6', border: '1px solid #5B6BE6', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={handleExportPNG} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'white', color: "rgb(91, 107, 230)", border: '1px solid #5B6BE6', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
             <Download size={18} /> PNG
           </button>
         </div>

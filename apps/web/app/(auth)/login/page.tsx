@@ -266,7 +266,7 @@ export default function LoginPage() {
           display: 'flex', justifyContent: 'space-between',
           marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #E2E8F0'
         }}>
-          <Link href="/register" style={{ color: '#5B6BE6', fontSize: '14px', textDecoration: 'none' }}>
+          <Link href="/register" style={{ color: "rgb(91, 107, 230)", fontSize: '14px', textDecoration: 'none' }}>
             还没有账号？立即注册
           </Link>
           <Link href="/forgot-password" style={{ color: '#A0AEC0', fontSize: '14px', textDecoration: 'none' }}>

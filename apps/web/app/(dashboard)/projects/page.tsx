@@ -165,7 +165,7 @@ export default function ProjectsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                   <div style={{
                     width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5B6BE6'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: "rgb(91, 107, 230)"
                   }}>
                     <Folder size={24} />
                   </div>
@@ -188,7 +188,7 @@ export default function ProjectsPage() {
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <Link href={`/projects/${project.id}`} style={{
                     flex: 1, padding: '8px', background: '#F5F7FB', borderRadius: '6px',
-                    color: '#5B6BE6', fontSize: '13px', textAlign: 'center', textDecoration: 'none'
+                    color: "rgb(91, 107, 230)", fontSize: '13px', textAlign: 'center', textDecoration: 'none'
                   }}>
                     查看
                   </Link>

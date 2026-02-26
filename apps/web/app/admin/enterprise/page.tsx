@@ -12,7 +12,7 @@ export default function Page() {
         <p style={{ color: '#718096', fontSize: 14 }}>管理企业用户</p>
       </div>
       <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#718096' }}>
-        <Building2 size={48} style={{ color: '#5B6BE6', marginBottom: 16 }} />
+        <Building2 size={48} style={{ color: "rgb(91, 107, 230)", marginBottom: 16 }} />
         <div>暂无企业数据</div>
       </div>
     </div>

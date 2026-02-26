@@ -7,7 +7,7 @@ export default function Page() {
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); setLoading(true); setTimeout(() => setLoading(false), 1000); };
   return (
     <div style={{ padding: 24, background: '#F5F7FB', minHeight: '100vh' }}>
-      <Link href="/enterprise" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#5B6BE6', marginBottom: 24, textDecoration: 'none' }}><ArrowLeft size={18} /> 返回</Link>
+      <Link href="/enterprise" style={{ display: 'flex', alignItems: 'center', gap: 8, color: "rgb(91, 107, 230)", marginBottom: 24, textDecoration: 'none' }}><ArrowLeft size={18} /> 返回</Link>
       <div style={{ maxWidth: 600, margin: '0 auto', background: 'white', borderRadius: 16, padding: 32 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#2D3748', marginBottom: 8 }}>绑定企业账号</h1>
         <p style={{ color: '#718096', marginBottom: 24 }}>输入企业邀请码进行绑定</p>

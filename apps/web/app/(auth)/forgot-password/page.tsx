@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
             </div>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#2D3748', marginBottom: '8px' }}>发送成功</h1>
             <p style={{ color: '#718096', fontSize: '14px', marginBottom: '24px' }}>请检查您的邮箱获取重置链接</p>
-            <Link href="/login" style={{ color: '#5B6BE6', fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            <Link href="/login" style={{ color: "rgb(91, 107, 230)", fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
               返回登录 <ArrowRight size={14} />
             </Link>
           </div>
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
               </button>
             </form>
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <Link href="/login" style={{ color: '#5B6BE6', fontSize: '14px', textDecoration: 'none' }}>返回登录</Link>
+              <Link href="/login" style={{ color: "rgb(91, 107, 230)", fontSize: '14px', textDecoration: 'none' }}>返回登录</Link>
             </div>
           </>
         )}

@@ -77,7 +77,7 @@ export default function NotificationsPage() {
       case 'success': return <CheckCircle size={20} style={{ color: 'rgb(91, 107, 230)' }} />;
       case 'warning': return <AlertCircle size={20} style={{ color: 'rgb(91, 107, 230)' }} />;
       case 'error': return <AlertCircle size={20} style={{ color: '#F4726B' }} />;
-      default: return <Mail size={20} style={{ color: '#5B6BE6' }} />;
+      default: return <Mail size={20} style={{ color: "rgb(91, 107, 230)" }} />;
     }
   };
 
@@ -130,7 +130,7 @@ export default function NotificationsPage() {
           <button onClick={markAllAsRead} style={{
             display: 'flex', alignItems: 'center', gap: '8px',
             padding: '10px 16px', background: 'white', border: '1px solid #E2E8F0',
-            borderRadius: '8px', color: '#5B6BE6', fontSize: '14px', cursor: 'pointer'
+            borderRadius: '8px', color: "rgb(91, 107, 230)", fontSize: '14px', cursor: 'pointer'
           }}>
             <Check size={16} /> 全部已读
           </button>
