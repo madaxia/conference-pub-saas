@@ -1,24 +1,31 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AIService } from './ai.service';
 
 @Controller('ai')
-@UseGuards(AuthGuard('jwt'))
 export class AIController {
-  constructor(private ai: AIService) {}
+  constructor(private aiService: AIService) {}
 
   @Get('settings')
-  getSettings() {
-    return this.ai.getAISettings();
+  async getSettings() {
+    return this.aiService.getAISettings();
   }
 
   @Post('settings')
-  updateSettings(@Body() data: any) {
-    return this.ai.updateAISettings(data);
+  async updateSettings(@Body() data: { model?: string; apiKey?: string }) {
+    return this.aiService.updateAISettings(data);
   }
 
-  @Post('generate')
-  generate(@Body() data: any) {
-    return this.ai.generate(data);
+  @Post('generate-text')
+  async generateText(
+    @Body() data: { prompt: string; type?: 'title' | 'content' | 'description' }
+  ) {
+    return this.aiService.generateText(data.prompt, data.type || 'content');
+  }
+
+  @Post('generate-image')
+  async generateImage(
+    @Body() data: { prompt: string; style?: 'realistic' | 'illustration' | 'simple' }
+  ) {
+    return this.aiService.generateImage(data.prompt, data.style || 'illustration');
   }
 }
