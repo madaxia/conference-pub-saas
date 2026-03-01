@@ -8,6 +8,7 @@ import {
   Layers, Save, ChevronLeft, ChevronRight, Wand2,
   Sparkles, ImagePlus, Loader2
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 // 动态导入 fabric.js (客户端 Only)
 let fabric: any = null;
@@ -483,7 +484,7 @@ export default function EditorContent() {
     
     const updateGridPosition = () => {
       const vpt = canvas.viewportTransform;
-      if (vpt) {
+      if (vpt && gridRef.current) {
         gridRef.current.style.transform = `translate(${vpt[4]}px, ${vpt[5]}px) scale(${vpt[0]})`;
       }
     };
@@ -654,7 +655,7 @@ export default function EditorContent() {
     if (!fabricRef.current) return;
     
     try {
-      const { jsPDF } = await import('jspdf');
+      // jsPDF is already imported statically
       const canvas = fabricRef.current;
       const width = canvas.width || 595;
       const height = canvas.height || 842;
