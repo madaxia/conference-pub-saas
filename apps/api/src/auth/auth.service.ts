@@ -1,9 +1,7 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, LoginDto } from './auth.dto';
-import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -11,14 +9,6 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
-
-  // 密码强度验证
-  private validatePassword(password: string): void {
-    if (password.length < 8) {
-      throw new BadRequestException('密码至少需要8个字符');
-    }
-    // 移除过于严格的验证，允许更多密码格式
-  }
 
   async register(tenantId: string, email: string, password: string, name: string, role?: string) {
     const existing = await this.prisma.user.findUnique({
@@ -29,9 +19,6 @@ export class AuthService {
       throw new ConflictException('邮箱已被注册');
     }
 
-    // 密码强度验证
-    this.validatePassword(password);
-
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
@@ -40,13 +27,14 @@ export class AuthService {
         email,
         name,
         passwordHash,
-        role: (role as UserRole) || 'member',
+        role: (role as any) || 'member',
       },
     });
 
     return this.generateToken(user);
   }
 
+  // 普通用户登录
   async login(tenantId: string, email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
@@ -61,21 +49,49 @@ export class AuthService {
       throw new UnauthorizedException('邮箱或密码错误');
     }
 
+    // 阻止管理员和印刷厂从用户端登录
+    if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'printer') {
+      throw new ForbiddenException('请使用正确的登录入口');
+    }
+
     return this.generateToken(user);
   }
 
-  async validateUser(tenantId: string, email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { tenantId_email: { tenantId, email } },
+  // 管理员登录
+  async adminLogin(email: string, password: string) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        email,
+        role: { in: ['admin', 'superadmin'] },
+      },
     });
 
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('邮箱或密码错误');
+    if (!users || users.length === 0) {
+      return null;
     }
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
+    const user = users[0];
+    const isValid = await bcrypt.compare(password, user.passwordHash || '');
     if (!isValid) {
-      throw new UnauthorizedException('邮箱或密码错误');
+      return null;
+    }
+
+    return this.generateToken(user);
+  }
+
+  // 印刷厂登录 - 查找role为printer的用户
+  async printerLogin(email: string, password: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { email, role: 'printer' as any },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const isValid = await bcrypt.compare(password, user.passwordHash || '');
+    if (!isValid) {
+      return null;
     }
 
     return this.generateToken(user);

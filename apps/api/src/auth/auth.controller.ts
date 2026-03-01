@@ -1,53 +1,67 @@
-import { Controller, Get, Post, Body, Query, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  // 普通用户登录
   @Post('login')
   async login(@Body() data: { tenantId: string; email: string; password: string }) {
-    return this.authService.validateUser(data.tenantId, data.email, data.password);
+    const result = await this.authService.login(
+      data.tenantId || 'default-tenant', 
+      data.email, 
+      data.password
+    );
+    // 标记为普通用户
+    if (result && result.user) {
+      result.user.role = 'member';
+    }
+    return result;
   }
 
+  // 注册
   @Post('register')
   async register(@Body() data: { tenantId: string; email: string; password: string; name: string; role?: string }) {
-    return this.authService.register(data.tenantId, data.email, data.password, data.name, data.role);
+    return this.authService.register(
+      data.tenantId || 'default-tenant', 
+      data.email, 
+      data.password, 
+      data.name,
+      data.role
+    );
   }
 
+  // 管理员登录
+  @Post('admin-login')
+  async adminLogin(@Body() data: { email: string; password: string }) {
+    const result = await this.authService.adminLogin(data.email, data.password);
+    if (!result) {
+      return { message: '管理员账号或密码错误', statusCode: 401 };
+    }
+    if (result && result.user) {
+      result.user.role = 'admin';
+    }
+    return result;
+  }
+
+  // 印刷厂登录
+  @Post('printer-login')
+  async printerLogin(@Body() data: { email: string; password: string }) {
+    const result = await this.authService.printerLogin(data.email, data.password);
+    if (!result) {
+      return { message: '印刷厂账号或密码错误', statusCode: 401 };
+    }
+    if (result && result.user) {
+      result.user.role = 'printer';
+    }
+    return result;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  async me(@Body() user: any) {
-    return this.authService.getUserById(user.id);
-  }
-
-  // WeChat OAuth endpoints (stub - requires proper implementation)
-  @Get('wechat/qr')
-  async getWechatQr(@Query('redirect') redirectUri: string) {
-    // Generate WeChat OAuth QR URL
-    const appId = process.env.WECHAT_APP_ID || 'wx1234567890';
-    const state = Buffer.from(JSON.stringify({ redirect: redirectUri })).toString('base64');
-    
-    const qrUrl = `https://open.weixin.qq.com/connect/qrconnect?appid=${appId}&redirect_uri=${encodeURIComponent(process.env.WECHAT_REDIRECT_URI || 'http://localhost:3001/auth/wechat/callback')}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`;
-    
-    return {
-      qrUrl,
-      appId,
-    };
-  }
-
-  @Get('wechat/callback')
-  async wechatCallback(@Query('code') code: string, @Query('state') state: string, @Res() res: any) {
-    // Redirect with error - WeChat integration requires proper backend
-    console.log('WeChat callback received, code:', code);
-    res.redirect('http://localhost:3000/login?error=wechat_not_configured');
-  }
-
-  @Post('wechat/bind')
-  async bindWechat(@Body() data: { tenantId: string; email: string; password: string; wechatCode: string }) {
-    // First verify user credentials
-    const user = await this.authService.validateUser(data.tenantId, data.email, data.password);
-    
-    // Stub - WeChat binding requires proper implementation
-    return { success: true, message: 'WeChat account binding not implemented' };
+  async me(@Request() req: any) {
+    return this.authService.getUserById(req.user.id);
   }
 }

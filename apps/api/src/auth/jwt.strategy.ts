@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // JWT验证 - 返回token中的用户信息
+    // 返回用户信息，包含角色
     return {
       id: payload.sub,
       email: payload.email,
