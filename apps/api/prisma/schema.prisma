@@ -45,6 +45,7 @@ model User {
   tenant                Tenant                @relation(fields: [tenantId], references: [id])
   fontUploads           UserFontUpload[]
   groupMemberships      UserGroupMember[]
+  readRecords           EbookReadRecord[]
   subscriptions         UserSubscription[]
   enterpriseMemberships EnterpriseMember[]
   operationLogs         ProjectOperationLog[]
@@ -56,6 +57,7 @@ enum UserRole {
   member
   admin
   superadmin
+  printer
 }
 
 model Project {
@@ -277,7 +279,9 @@ model Ebook {
   id            String             @id @default(cuid())
   tenantId      String
   projectId     String?
+  name          String
   title         String
+  status        String             @default("draft")
   url           String
   coverUrl      String?
   pdfUrl        String?
@@ -288,9 +292,23 @@ model Ebook {
   project       Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
   tenant        Tenant?            @relation(fields: [tenantId], references: [id])
   subscriptions UserSubscription[]
+  readRecords   EbookReadRecord[]
 
   @@index([tenantId])
   @@index([projectId])
+}
+
+model EbookReadRecord {
+  id        String   @id @default(cuid())
+  ebookId   String
+  userId    String
+  readAt    DateTime @default(now())
+  ebook     Ebook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ebookId, userId])
+  @@index([ebookId])
+  @@index([userId])
 }
 
 model UserSubscription {

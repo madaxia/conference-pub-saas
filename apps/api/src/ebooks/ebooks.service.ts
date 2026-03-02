@@ -68,6 +68,8 @@ export class EbooksService {
       return await this.prisma.ebook.create({
         data: {
           name: data.name,
+          title: data.name,
+          url: data.pdfUrl || '',
           projectId: data.projectId,
           tenantId: data.tenantId,
           pdfUrl: data.pdfUrl,
