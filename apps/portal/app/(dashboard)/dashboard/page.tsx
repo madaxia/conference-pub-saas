@@ -157,7 +157,6 @@ export default function DashboardPage() {
             {[
               { label: '新建订单', icon: <Package size={18} />, href: '/orders' },
               { label: '添加打印机', icon: <Printer size={18} />, href: '/printers' },
-              { label: '审核申请', icon: <FileText size={18} />, href: '/applications' },
             ].map((action, index) => (
               <a key={index} href={action.href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#F8FAFC', borderRadius: '8px', textDecoration: 'none', color: '#2D3748' }}>
                 <span style={{ color: 'rgb(91, 107, 230)' }}>{action.icon}</span>

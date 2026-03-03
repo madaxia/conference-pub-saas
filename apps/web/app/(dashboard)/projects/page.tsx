@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Folder, Plus, FileText, Calendar, Search, Filter, MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
+import { Folder, Plus, FileText, Calendar, Search, X, Layout, Upload } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -15,10 +14,14 @@ interface Project {
 }
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -29,7 +32,7 @@ export default function ProjectsPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:3001/projects', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: token ? { Authorization: 'Bearer ' + token } : {},
       });
       const data = await res.json();
       setProjects(Array.isArray(data) ? data : []);
@@ -40,7 +43,54 @@ export default function ProjectsPage() {
     }
   };
 
-  // Filter projects by search
+  const handleCreateFromTemplate = async () => {
+    if (!newProjectName.trim()) return;
+    setCreating(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        body: JSON.stringify({ name: newProjectName }),
+      });
+      const project = await res.json();
+      setShowCreateModal(false);
+      setNewProjectName('');
+      router.push('/projects/' + project.id + '/templates');
+    } catch (e) {
+      setError('创建项目失败');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleImportPDF = async () => {
+    if (!newProjectName.trim()) return;
+    setCreating(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        body: JSON.stringify({ name: newProjectName }),
+      });
+      const project = await res.json();
+      setShowCreateModal(false);
+      setNewProjectName('');
+      router.push('/projects/' + project.id + '/import');
+    } catch (e) {
+      setError('创建项目失败');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const filteredProjects = projects.filter(p => 
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.conferenceName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,62 +118,50 @@ export default function ProjectsPage() {
     return texts[status] || status;
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div style={{ padding: '24px' }}>
+      <div className="projects-page" style={{ padding: '24px' }}>
         <div style={{ marginBottom: '24px' }}>
           <div style={{ height: '32px', width: '120px', background: '#E2E8F0', borderRadius: '6px', marginBottom: '8px' }}></div>
           <div style={{ height: '20px', width: '200px', background: '#E2E8F0', borderRadius: '6px' }}></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '20px', animation: 'shimmer 1.5s infinite' }}>
+            <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '20px' }}>
               <div style={{ height: '20px', width: '60%', background: '#E2E8F0', borderRadius: '6px', marginBottom: '12px' }}></div>
               <div style={{ height: '16px', width: '40%', background: '#E2E8F0', borderRadius: '6px' }}></div>
             </div>
           ))}
         </div>
-        <style jsx>{`
-          @keyframes shimmer {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-          }
-        `}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Header */}
+    <div className="projects-page" style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>
-            项目管理
-          </h1>
-          <p style={{ color: '#718096', fontSize: '14px' }}>
-            管理您的会刊项目
-          </p>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>项目管理</h1>
+          <p style={{ color: '#718096', fontSize: '14px' }}>管理您的会刊项目</p>
         </div>
-        <Link href="/projects/new" style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '12px 20px', background: '#5B6BE6', color: 'white',
-          borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 500
-        }}>
+        <button 
+          onClick={() => setShowCreateModal(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '12px 20px', background: '#5B6BE6', color: 'white',
+            border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer'
+          }}
+        >
           <Plus size={18} /> 创建项目
-        </Link>
+        </button>
       </div>
 
-      {/* Error message */}
       {error && (
         <div style={{ padding: '12px', background: '#FDECEC', borderRadius: '8px', color: '#F4726B', marginBottom: '16px' }}>
           {error}
         </div>
       )}
 
-      {/* Search & Filter */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
@@ -139,28 +177,18 @@ export default function ProjectsPage() {
             }}
           />
         </div>
-        <button style={{
-          padding: '12px 16px', background: 'white', border: '1px solid #E2E8F0',
-          borderRadius: '8px', color: '#718096', fontSize: '14px',
-          display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
-        }}>
-          <Filter size={18} /> 筛选
-        </button>
       </div>
 
-      {/* Projects Grid */}
       {filteredProjects.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           {filteredProjects.map((project) => {
             const statusStyle = getStatusColor(project.status);
             return (
-              <div key={project.id} style={{
+              <div key={project.id} className="project-card" style={{
                 background: 'white', borderRadius: '12px', padding: '20px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s',
-                cursor: 'pointer'
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', cursor: 'pointer'
               }}
-              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
-              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
+              onClick={() => router.push('/projects/' + project.id)}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                   <div style={{
@@ -176,39 +204,18 @@ export default function ProjectsPage() {
                     {getStatusText(project.status)}
                   </span>
                 </div>
-                
                 <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#2D3748', marginBottom: '8px' }}>
                   {project.name || '未命名项目'}
                 </h3>
-                
                 <p style={{ fontSize: '13px', color: '#718096', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Calendar size={14} /> {project.issueDate ? new Date(project.issueDate).toLocaleDateString('zh-CN') : '未设置日期'}
                 </p>
-                
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Link href={`/projects/${project.id}`} style={{
-                    flex: 1, padding: '8px', background: '#F5F7FB', borderRadius: '6px',
-                    color: "rgb(91, 107, 230)", fontSize: '13px', textAlign: 'center', textDecoration: 'none'
-                  }}>
-                    查看
-                  </Link>
-                  <button style={{
-                    padding: '8px 12px', background: '#F5F7FB', border: 'none', borderRadius: '6px',
-                    color: '#718096', cursor: 'pointer'
-                  }}>
-                    <MoreVertical size={16} />
-                  </button>
-                </div>
               </div>
             );
           })}
         </div>
       ) : (
-        /* Empty State */
-        <div style={{
-          textAlign: 'center', padding: '80px 20px', background: 'white',
-          borderRadius: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-        }}>
+        <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '16px' }}>
           <div style={{ fontSize: '64px', marginBottom: '16px' }}>📁</div>
           <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#2D3748', marginBottom: '8px' }}>
             {searchTerm ? '未找到匹配项目' : '暂无项目'}
@@ -216,23 +223,88 @@ export default function ProjectsPage() {
           <p style={{ fontSize: '14px', color: '#718096', marginBottom: '24px' }}>
             {searchTerm ? '尝试使用其他搜索词' : '创建您的第一个会刊项目'}
           </p>
-          <Link href="/projects/new" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            padding: '12px 24px', background: '#5B6BE6', color: 'white',
-            borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 500
-          }}>
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '12px 24px', background: '#5B6BE6', color: 'white',
+              border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer'
+            }}
+          >
             <Plus size={18} /> 创建项目
-          </Link>
+          </button>
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `}</style>
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{ background: 'white', borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '520px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#2D3748', margin: 0 }}>创建新项目</h2>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#718096' }}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#4A5568', marginBottom: '8px' }}>
+                项目名称
+              </label>
+              <input
+                type="text"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="请输入项目名称"
+                style={{
+                  width: '100%', padding: '12px',
+                  border: '1px solid #E2E8F0', borderRadius: '8px',
+                  fontSize: '14px', outline: 'none'
+                }}
+                autoFocus
+              />
+            </div>
+
+            <p style={{ fontSize: '14px', color: '#718096', marginBottom: '16px' }}>选择创建方式：</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <button
+                onClick={handleCreateFromTemplate}
+                disabled={creating || !newProjectName.trim()}
+                style={{
+                  padding: '24px', background: '#F8FAFC', border: '2px solid #E2E8F0',
+                  borderRadius: '12px', cursor: 'pointer', textAlign: 'center',
+                  opacity: creating || !newProjectName.trim() ? 0.5 : 1
+                }}
+              >
+                <div style={{ width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  <Layout size={24} style={{ color: '#5B6BE6' }} />
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#2D3748', marginBottom: '4px' }}>从模板创建</h3>
+                <p style={{ fontSize: '13px', color: '#718096', margin: 0 }}>选择预设模板开始设计</p>
+              </button>
+
+              <button
+                onClick={handleImportPDF}
+                disabled={creating || !newProjectName.trim()}
+                style={{
+                  padding: '24px', background: '#F8FAFC', border: '2px solid #E2E8F0',
+                  borderRadius: '12px', cursor: 'pointer', textAlign: 'center',
+                  opacity: creating || !newProjectName.trim() ? 0.5 : 1
+                }}
+              >
+                <div style={{ width: '48px', height: '48px', background: '#E8EAFC', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  <Upload size={24} style={{ color: '#5B6BE6' }} />
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#2D3748', marginBottom: '4px' }}>导入 PDF</h3>
+                <p style={{ fontSize: '13px', color: '#718096', margin: 0 }}>上传PDF文件自动分页编辑</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

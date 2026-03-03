@@ -24,7 +24,6 @@ const portalNavItems: NavItem[] = [
   { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
   { name: '订单管理', href: '/orders', icon: <Printer size={18} /> },
   { name: '打印机', href: '/printers', icon: <Printer size={18} /> },
-  { name: '申请审批', href: '/applications', icon: <FileText size={18} /> },
   { name: '设置', href: '/settings', icon: <Settings size={18} /> },
 ];
 

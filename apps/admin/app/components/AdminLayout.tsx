@@ -112,9 +112,9 @@ export default function AdminLayout({ children, isAdmin = true }: AdminLayoutPro
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB', flexDirection: 'column' }}>
+    <div className="admin-layout" style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FB', flexDirection: 'column' }}>
       {/* Top Header */}
-      <header style={{
+      <header className="admin-header" style={{
         height: '60px',
         background: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
@@ -221,7 +221,7 @@ export default function AdminLayout({ children, isAdmin = true }: AdminLayoutPro
 
       <div style={{ display: 'flex', marginTop: '60px' }}>
         {/* Sidebar */}
-        <aside style={{
+        <aside className="admin-sidebar" style={{
           width: '260px',
           background: '#FFFFFF',
           borderRight: '1px solid #E2E8F0',
@@ -231,7 +231,7 @@ export default function AdminLayout({ children, isAdmin = true }: AdminLayoutPro
           height: 'calc(100vh - 60px)',
           zIndex: 100,
         }}>
-          <nav style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
+          <nav className="admin-nav" style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
             {adminNavItems.map((item, index) => (
               <div key={index} style={{ marginBottom: '4px' }}>
                 {item.children ? (
@@ -315,7 +315,7 @@ export default function AdminLayout({ children, isAdmin = true }: AdminLayoutPro
         </aside>
 
         {/* Main Content */}
-        <main style={{ flex: 1, marginLeft: '260px', minHeight: 'calc(100vh - 60px)' }}>
+        <main className="admin-main" style={{ flex: 1, marginLeft: '260px', minHeight: 'calc(100vh - 60px)', padding: '24px', background: '#F5F7FB' }}>
           {children}
         </main>
       </div>

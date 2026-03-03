@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div>
+    <div className="admin-dashboard">
       {/* Page Header */}
       <div className="admin-page-header" style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#2D3748', marginBottom: '6px' }}>
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div style={{
+      <div className="admin-quick-actions" style={{
         background: '#FFFFFF',
         borderRadius: '16px',
         padding: '24px',

@@ -1097,8 +1097,10 @@ export default function EditorContent() {
                     const activeObj = canvas?.getActiveObject();
                     if (activeObj) {
                       activeObj.set('fontFamily', newFont);
+                      activeObj.dirty = true;
                       canvas?.renderAll();
-                      // 不需要更新React状态，canvas已经渲染了新字体
+                      // 更新React状态以同步UI
+                      setSelectedObject({ ...selectedObject, fontFamily: newFont });
                     }
                   }}
                   style={{ width: '100%', padding: '10px 12px', background: '#F5F7FB', border: '1px solid #E2E8F0', borderRadius: '6px', fontSize: '13px', color: '#2D3748', cursor: 'pointer' }}

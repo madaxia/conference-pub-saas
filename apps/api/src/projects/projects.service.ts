@@ -8,7 +8,7 @@ export class ProjectsService {
   async findAll(tenantId: string, userId: string) {
     return this.prisma.project.findMany({
       where: { tenantId },
-      include: { owner: { select: { id: true, name: true, email: true } } },
+      include: { owner: { select: { id: true, name: true, email: true } }, Document: true },
       orderBy: { updatedAt: 'desc' },
     });
   }
@@ -16,7 +16,7 @@ export class ProjectsService {
   async findById(id: string, tenantId: string) {
     const project = await this.prisma.project.findFirst({
       where: { id, tenantId },
-      include: { owner: { select: { id: true, name: true, email: true } } },
+      include: { owner: { select: { id: true, name: true, email: true } }, Document: true },
     });
     if (!project) throw new NotFoundException('Project not found');
     return project;
@@ -33,7 +33,7 @@ export class ProjectsService {
         status: 'draft',
         projectType: data.projectType || 'personal',
       },
-      include: { owner: { select: { id: true, name: true, email: true } } },
+      include: { owner: { select: { id: true, name: true, email: true } }, Document: true },
     });
   }
 
