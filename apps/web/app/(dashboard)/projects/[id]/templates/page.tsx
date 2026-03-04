@@ -54,10 +54,19 @@ export default function TemplatesPage() {
         if (res.ok) {
           const data = await res.json();
           // Map API templates to local format
+          // Map API category to local category
+          const categoryMap: Record<string, string> = {
+            'conference_program': 'conference',
+            'poster': 'poster',
+            'card': 'card',
+            'brochure': 'brochure',
+            'calendar': 'calendar',
+            'business': 'business',
+          };
           const mappedTemplates = data.map((t: any) => ({
             id: t.id,
             name: t.name,
-            category: t.category,
+            category: categoryMap[t.category] || 'conference',
             description: t.description,
             thumbnailUrl: t.thumbnailUrl || t.thumbnailUrl,
             previewUrl: t.previewUrl,

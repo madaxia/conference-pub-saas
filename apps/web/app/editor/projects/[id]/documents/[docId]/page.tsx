@@ -49,6 +49,7 @@ const components: EditorElement[] = [
   { id: 'rect', type: 'rect', name: '矩形', icon: <Square size={18} /> },
   { id: 'circle', type: 'circle', name: '圆形', icon: <Circle size={18} /> },
   { id: 'triangle', type: 'triangle', name: '三角形', icon: <Triangle size={18} /> },
+  { id: 'image', type: 'image', name: '图片', icon: <ImagePlus size={18} /> },
 ];
 
 export default function EditorContent() {
@@ -88,6 +89,15 @@ export default function EditorContent() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResults, setAiResults] = useState<any[]>([]);
+  const [aiAreaMode, setAiAreaMode] = useState(false);
+  const [aiCount, setAiCount] = useState(3); // 生成数量
+  const aiAreaRef = useRef<any>(null);
+  const aiOverlayRef = useRef<any>(null);
+  
+  // 问题3：AI选择模式状态
+  const [aiSelectionMode, setAiSelectionMode] = useState(false);
+  const [aiSelectionStart, setAiSelectionStart] = useState<{x: number, y: number} | null>(null);
+  const aiSelectionRectRef = useRef<any>(null);
 
   // 初始化 Fabric.js
   useEffect(() => {
@@ -183,12 +193,13 @@ export default function EditorContent() {
           // 初始视口变换：简单居中
           canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
           
-          // 添加默认标题 - 相对于artboard定位
-          const title = new fabric.IText('标题', {
+          // 添加默认标题 - 使用 Textbox 替代 IText
+          const title = new fabric.Textbox('标题', {
             left: artboardX + artboardWidth / 2,
             top: artboardY + 60,
             originX: 'center',
             originY: 'center',
+            width: artboardWidth - 40,
             fontSize: 32,
             fontFamily: 'SimHei, Arial',
             fill: '#333333',
@@ -197,12 +208,13 @@ export default function EditorContent() {
           });
           canvas.add(title);
           
-          // 添加默认副标题 - 相对于artboard定位
-          const subtitle = new fabric.IText('副标题', {
+          // 添加默认副标题 - 使用 Textbox 替代 IText
+          const subtitle = new fabric.Textbox('副标题', {
             left: artboardX + artboardWidth / 2,
             top: artboardY + 100,
             originX: 'center',
             originY: 'center',
+            width: artboardWidth - 40,
             fontSize: 18,
             fontFamily: 'SimHei, Arial',
             fill: '#666666',
@@ -215,6 +227,46 @@ export default function EditorContent() {
           canvas.on('selection:created', (e: any) => setSelectedObject(e.selected[0]));
           canvas.on('selection:updated', (e: any) => setSelectedObject(e.selected[0]));
           canvas.on('selection:cleared', () => setSelectedObject(null));
+          
+          // 任务1：文本和图形缩放修复 - 监听对象缩放事件
+          canvas.on('object:scaling', (e: any) => {
+            const obj = e.target;
+            if (!obj) return;
+            
+            // 问题1：文本缩放 - 使用 Textbox 时保持字体大小不变，只改变宽度
+            if (obj.type === 'textbox') {
+              const newWidth = (obj.width || 0) * (obj.scaleX || 1);
+              obj.set({
+                width: newWidth,
+                scaleX: 1,
+                scaleY: 1,
+              });
+              return;
+            }
+            
+            // 问题2：图形缩放 - 保持 strokeWidth 不变
+            if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle') {
+              const scaleX = obj.scaleX || 1;
+              const scaleY = obj.scaleY || 1;
+              
+              // 保持倒角比例不变
+              if (obj.type === 'rect' && obj.rx) {
+                obj.set({
+                  rx: (obj.rx || 0) / Math.min(scaleX, scaleY),
+                  ry: (obj.ry || 0) / Math.min(scaleX, scaleY),
+                });
+              }
+              
+              // 保持 strokeWidth 不变
+              obj.set({
+                width: (obj.width || 0) * scaleX,
+                height: (obj.height || 0) * scaleY,
+                strokeWidth: (obj.strokeWidth || 0) / Math.min(scaleX, scaleY),
+                scaleX: 1,
+                scaleY: 1,
+              });
+            }
+          });
           
           // 对齐网格功能
           canvas.on('object:moving', (e: any) => {
@@ -308,9 +360,87 @@ export default function EditorContent() {
             }
           });
           
+          // 问题3：AI选择模式 - 监听鼠标事件实现框选
+          canvas.on('mouse:down', function(opt: any) {
+            // 如果不在AI选择模式，不处理
+            if (!aiSelectionMode) return;
+            
+            const pointer = canvas.getPointer(opt.e);
+            setAiSelectionStart({ x: pointer.x, y: pointer.y });
+            
+            // 创建虚线矩形
+            const rect = new fabric.Rect({
+              left: pointer.x,
+              top: pointer.y,
+              width: 0,
+              height: 0,
+              fill: 'rgba(91, 107, 230, 0.1)',
+              stroke: '#5B6BE6',
+              strokeDashArray: [5, 5],
+              selectable: false,
+              evented: false,
+              isAISelection: true,
+            });
+            canvas.add(rect);
+            aiSelectionRectRef.current = rect;
+          });
+          
+          canvas.on('mouse:move', function(opt: any) {
+            // 如果不在AI选择模式，不处理
+            if (!aiSelectionMode || !aiSelectionStart || !aiSelectionRectRef.current) return;
+            
+            const pointer = canvas.getPointer(opt.e);
+            const width = pointer.x - aiSelectionStart.x;
+            const height = pointer.y - aiSelectionStart.y;
+            
+            aiSelectionRectRef.current.set({
+              width: Math.abs(width),
+              height: Math.abs(height),
+              left: width > 0 ? aiSelectionStart.x : pointer.x,
+              top: height > 0 ? aiSelectionStart.y : pointer.y,
+            });
+            canvas.renderAll();
+          });
+          
+          canvas.on('mouse:up', function(opt: any) {
+            // 如果不在AI选择模式，不处理
+            if (!aiSelectionMode || !aiSelectionRectRef.current) return;
+            
+            // 恢复鼠标样式
+            document.body.style.cursor = 'default';
+            
+            // 保存选择区域信息到 ref
+            const rect = aiSelectionRectRef.current;
+            aiAreaRef.current = {
+              left: rect.left,
+              top: rect.top,
+              width: rect.width,
+              height: rect.height,
+            };
+            
+            // 清除选择矩形
+            canvas.remove(rect);
+            aiSelectionRectRef.current = null;
+            setAiSelectionStart(null);
+            
+            // 退出选择模式，显示AI面板
+            setAiSelectionMode(false);
+            setShowAIPanel(true);
+            
+            // 保存到历史
+            saveToHistory();
+          });
+          
           // 保存初始状态
           saveToHistory();
           setLoading(false);
+        } else {
+          // Canvas or container not ready, retry after a short delay
+          console.log('Canvas or container not ready, retrying...');
+          setTimeout(() => {
+            initFabric();
+          }, 100);
+          return;
         }
       } catch (error) {
         console.error('Failed to load fabric:', error);
@@ -432,12 +562,13 @@ export default function EditorContent() {
     canvas.add(artboard);
     canvas.sendObjectToBack(artboard);
     
-    // 重新添加标题
-    const title = new fabric.IText('标题', {
+    // 重新添加标题 - 使用 Textbox
+    const title = new fabric.Textbox('标题', {
       left: artboardX + artboardWidth / 2,
       top: artboardY + 60,
       originX: 'center',
       originY: 'center',
+      width: artboardWidth - 40,
       fontSize: 32,
       fontFamily: 'SimHei, Arial',
       fill: '#333333',
@@ -446,12 +577,13 @@ export default function EditorContent() {
     });
     canvas.add(title);
     
-    // 重新添加副标题
-    const subtitle = new fabric.IText('副标题', {
+    // 重新添加副标题 - 使用 Textbox
+    const subtitle = new fabric.Textbox('副标题', {
       left: artboardX + artboardWidth / 2,
       top: artboardY + 100,
       originX: 'center',
       originY: 'center',
+      width: artboardWidth - 40,
       fontSize: 18,
       fontFamily: 'SimHei, Arial',
       fill: '#666666',
@@ -533,6 +665,35 @@ export default function EditorContent() {
     });
   };
 
+  // 添加图片 - 支持本地文件上传
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && fabricRef.current && fabric) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        fabric.FabricImage.fromURL(dataUrl, (img: any) => {
+          // 计算缩放使图片适合画布
+          const maxSize = 300;
+          const scale = Math.min(maxSize / (img.width || 1), maxSize / (img.height || 1), 1);
+          img.set({
+            left: fabricRef.current.width! / 2 - (img.width * scale) / 2,
+            top: fabricRef.current.height! / 2 - (img.height * scale) / 2,
+            scaleX: scale,
+            scaleY: scale,
+          });
+          fabricRef.current.add(img);
+          fabricRef.current.setActiveObject(img);
+          fabricRef.current.renderAll();
+          saveToHistory();
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+    // 清空input以便重复选择同一文件
+    e.target.value = '';
+  };
+
   // 添加元素
   const addElement = (type: string) => {
     if (!fabricRef.current || !fabric) return;
@@ -543,9 +704,11 @@ export default function EditorContent() {
 
     switch (type) {
       case 'text':
-        obj = new fabric.IText('双击编辑文字', {
+        // 问题1：使用 Textbox 替代 IText，防止缩放时字体变形
+        obj = new fabric.Textbox('双击编辑文字', {
           left: centerX - 50,
           top: centerY,
+          width: 200,
           fontSize: 24,
           fontFamily: 'SimHei, sans-serif',
           fill: '#2D3748',
@@ -585,6 +748,10 @@ export default function EditorContent() {
           strokeWidth: 2,
         });
         break;
+      // 任务2：组件库添加图片工具 - 点击时触发文件选择
+      case 'image':
+        document.getElementById('image-upload-input')?.click();
+        return;
       default:
         return;
     }
@@ -699,10 +866,154 @@ export default function EditorContent() {
     fabricRef.current.renderAll();
   };
 
-  // AI 生成 (带演示模式)
+  // AI 生成 (带演示模式) - 任务3：支持选中替换和无选中区域选择
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim()) return;
     
+    const canvas = fabricRef.current;
+    if (!canvas) return;
+    
+    const activeObj = canvas.getActiveObject();
+    
+    // 如果有选中对象且类型匹配，直接替换
+    if (activeObj) {
+      if (aiType === 'text' && activeObj.type === 'i-text') {
+        // 选中文字，生成后替换
+        setAiLoading(true);
+        setAiResults([]);
+        try {
+          const res = await fetch('http://localhost:3001/ai/generate-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: aiPrompt, type: 'content' }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setAiResults(data.results || []);
+          } else {
+            setAiResults(getDemoResults(aiType));
+          }
+        } catch (error) {
+          setAiResults(getDemoResults(aiType));
+        } finally {
+          setAiLoading(false);
+        }
+        return;
+      } else if (aiType === 'image' && (activeObj.type === 'image' || activeObj.type === 'fabric-image')) {
+        // 选中图片，生成后替换
+        setAiLoading(true);
+        setAiResults([]);
+        try {
+          const res = await fetch('http://localhost:3001/ai/generate-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: aiPrompt, style: 'illustration' }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setAiResults(data.results || []);
+          } else {
+            setAiResults(getDemoResults(aiType));
+          }
+        } catch (error) {
+          setAiResults(getDemoResults(aiType));
+        } finally {
+          setAiLoading(false);
+        }
+        return;
+      }
+    }
+    
+    // 无选中：进入区域选择模式
+    setAiAreaMode(true);
+    
+    // 在画布中心创建半透明矩形区域
+    const centerX = canvas.width! / 2;
+    const centerY = canvas.height! / 2;
+    const areaWidth = aiType === 'text' ? 400 : 300;
+    const areaHeight = aiType === 'text' ? 60 : 200;
+    
+    // 创建半透明遮罩
+    const overlay = new fabric.Rect({
+      left: 0,
+      top: 0,
+      width: canvas.width,
+      height: canvas.height,
+      fill: 'rgba(0, 0, 0, 0.3)',
+      selectable: false,
+      evented: false,
+      isAIOverlay: true,
+    });
+    canvas.add(overlay);
+    canvas.sendObjectToBack(overlay);
+    
+    // 创建可拖拽的区域指示器
+    const aiArea = new fabric.Rect({
+      left: centerX - areaWidth / 2,
+      top: centerY - areaHeight / 2,
+      width: areaWidth,
+      height: areaHeight,
+      fill: 'rgba(91, 107, 230, 0.2)',
+      stroke: '#5B6BE6',
+      strokeWidth: 2,
+      strokeDashArray: [8, 4],
+      rx: 8,
+      ry: 8,
+      selectable: true,
+      hasControls: true,
+      hasBorders: true,
+      isAIArea: true,
+    });
+    canvas.add(aiArea);
+    aiAreaRef.current = aiArea;
+    aiOverlayRef.current = overlay;
+    
+    // 添加提示文字
+    const hintText = new fabric.IText(
+      aiType === 'text' ? '拖拽调整文字区域' : '拖拽调整图片区域',
+      {
+        left: centerX,
+        top: centerY,
+        originX: 'center',
+        originY: 'center',
+        fontSize: 14,
+        fill: '#5B6BE6',
+        selectable: false,
+        evented: false,
+        isAIHint: true,
+      }
+    );
+    canvas.add(hintText);
+    
+    canvas.renderAll();
+  };
+  
+  // 确认AI区域并生成
+  const confirmAIArea = async () => {
+    if (!fabricRef.current || !aiAreaRef.current) return;
+    
+    const canvas = fabricRef.current;
+    const aiArea = aiAreaRef.current;
+    
+    // 获取区域位置
+    const areaLeft = aiArea.left || 0;
+    const areaTop = aiArea.top || 0;
+    const areaWidth = (aiArea.width || 100) * (aiArea.scaleX || 1);
+    const areaHeight = (aiArea.height || 100) * (aiArea.scaleY || 1);
+    
+    // 清理区域指示器
+    const objects = canvas.getObjects();
+    objects.forEach((obj: any) => {
+      if (obj.isAIArea || obj.isAIOverlay || obj.isAIHint) {
+        canvas.remove(obj);
+      }
+    });
+    
+    setAiAreaMode(false);
+    aiAreaRef.current = null;
+    aiOverlayRef.current = null;
+    
+    // 开始生成
     setAiLoading(true);
     setAiResults([]);
     
@@ -721,60 +1032,168 @@ export default function EditorContent() {
         }),
       });
       
-      // 优先使用真实API
       if (res.ok) {
         const data = await res.json();
         setAiResults(data.results || []);
       } else {
-        // API失败时使用演示模式
-        console.log('API返回失败，使用演示模式');
         setAiResults(getDemoResults(aiType));
       }
     } catch (error) {
-      console.error('AI生成失败,使用演示模式:', error);
-      // 演示模式 fallback
       setAiResults(getDemoResults(aiType));
     } finally {
       setAiLoading(false);
+      canvas.renderAll();
     }
+  };
+  
+  // 取消AI区域选择
+  const cancelAIArea = () => {
+    if (!fabricRef.current) return;
+    
+    const canvas = fabricRef.current;
+    const objects = canvas.getObjects();
+    objects.forEach((obj: any) => {
+      if (obj.isAIArea || obj.isAIOverlay || obj.isAIHint) {
+        canvas.remove(obj);
+      }
+    });
+    
+    setAiAreaMode(false);
+    aiAreaRef.current = null;
+    aiOverlayRef.current = null;
+    canvas.renderAll();
   };
 
   // 获取演示结果
   const getDemoResults = (type: AIGenerateType) => {
     if (type === 'text') {
-      return [
+      const textResults = [
         { id: 1, content: `【${aiPrompt}】- 演示模式\n\n本次大会汇聚了来自全球的行业专家，就最新技术发展趋势进行了深入探讨。与会者普遍认为，人工智能将成为推动行业创新的核心动力。` },
         { id: 2, content: `【${aiPrompt}】- 演示模式\n\n会议期间，多家企业展示了最新产品和技术解决方案，现场气氛热烈。与会者表示收获颇丰，期待明年再会。` },
+        { id: 3, content: `【${aiPrompt}】- 演示模式\n\n本次论坛聚焦数字化转型与可持续发展议题，邀请了多位行业领袖分享前沿观点。会议现场互动频繁，干货满满。` },
+        { id: 4, content: `【${aiPrompt}】- 演示模式\n\n大会设置了多个分论坛，涵盖技术创新、市场拓展、团队建设等热门话题。与会者可以根据自身兴趣选择参加。` },
       ];
+      return textResults.slice(0, aiCount);
     } else {
-      return [
+      const imageResults = [
         { id: 1, url: 'https://via.placeholder.com/400x300/5B6BE6/FFFFFF?text=AI+Generated+Image', thumbnail: 'https://via.placeholder.com/200x150/5B6BE6/FFFFFF?text=Preview' },
         { id: 2, url: 'https://via.placeholder.com/400x300/9B6BF5/FFFFFF?text=AI+Artwork', thumbnail: 'https://via.placeholder.com/200x150/9B6BF5/FFFFFF?text=Preview' },
+        { id: 3, url: 'https://via.placeholder.com/400x300/6BCBF5/FFFFFF?text=AI+Design', thumbnail: 'https://via.placeholder.com/200x150/6BCBF5/FFFFFF?text=Preview' },
+        { id: 4, url: 'https://via.placeholder.com/400x300/F56B6B/FFFFFF?text=AI+Creative', thumbnail: 'https://via.placeholder.com/200x150/F56B6B/FFFFFF?text=Preview' },
       ];
+      return imageResults.slice(0, aiCount);
     }
   };
 
-  // 使用AI生成的文本
-  const useAIText = (content: string) => {
+  // 任务3：AI生成功能优化 - 选中图片/文字时替换，无选中时创建区域
+  // 替换选中图片
+  const replaceWithAIImage = (url: string) => {
     if (!fabricRef.current || !fabric) return;
     
-    const obj = new fabric.IText(content, {
-      left: 100,
-      top: 100,
-      fontSize: 18,
-      fontFamily: 'SimHei, sans-serif',
-      fill: '#2D3748',
-    });
+    const activeObj = fabricRef.current.getActiveObject();
     
-    fabricRef.current.add(obj);
-    fabricRef.current.setActiveObject(obj);
-    fabricRef.current.renderAll();
+    fabric.FabricImage.fromURL(url, (img: any) => {
+      if (activeObj && (activeObj.type === 'image' || activeObj.type === 'fabric-image')) {
+        // 选中图片：替换选中图片
+        const left = activeObj.left;
+        const top = activeObj.top;
+        const scaleX = activeObj.scaleX || 1;
+        const scaleY = activeObj.scaleY || 1;
+        
+        fabricRef.current.remove(activeObj);
+        img.set({ left, top, scaleX, scaleY });
+        fabricRef.current.add(img);
+        fabricRef.current.setActiveObject(img);
+      } else {
+        // 无选中：添加到画布中心
+        const centerX = fabricRef.current.width! / 2;
+        const centerY = fabricRef.current.height! / 2;
+        img.set({
+          left: centerX - 150,
+          top: centerY - 100,
+          scaleX: 0.5,
+          scaleY: 0.5,
+        });
+        fabricRef.current.add(img);
+        fabricRef.current.setActiveObject(img);
+      }
+      fabricRef.current.renderAll();
+      saveToHistory();
+    });
+  };
+
+  // 替换选中文字
+  const replaceWithAIText = (content: string) => {
+    if (!fabricRef.current || !fabric) return;
+    
+    const canvas = fabricRef.current;
+    const activeObj = canvas.getActiveObject();
+    
+    // 支持 i-text 和 textbox
+    if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'textbox')) {
+      // 选中文字：替换选中文字内容
+      const left = activeObj.left;
+      const top = activeObj.top;
+      const fontSize = activeObj.fontSize || 18;
+      const fontFamily = activeObj.fontFamily || 'SimHei, sans-serif';
+      const fill = activeObj.fill || '#2D3748';
+      
+      canvas.remove(activeObj);
+      // 使用 Textbox 替代 IText
+      const newText = new fabric.Textbox(content, {
+        left,
+        top,
+        width: activeObj.width || 200,
+        fontSize,
+        fontFamily,
+        fill,
+      });
+      canvas.add(newText);
+      canvas.setActiveObject(newText);
+    } else {
+      // 无选中：添加新文字到画布中心
+      const centerX = canvas.width! / 2;
+      const newText = new fabric.Textbox(content, {
+        left: centerX - 100,
+        top: canvas.height! / 2,
+        width: 200,
+        fontSize: 18,
+        fontFamily: 'SimHei, sans-serif',
+        fill: '#2D3748',
+      });
+      canvas.add(newText);
+      canvas.setActiveObject(newText);
+    }
+    canvas.renderAll();
     saveToHistory();
   };
 
-  // 使用AI生成的图片
+  // 使用AI生成的文本 (保留旧函数用于兼容性)
+  const useAIText = (content: string) => {
+    replaceWithAIText(content);
+  };
+
+  // 使用AI生成的图片 (保留旧函数用于兼容性)
   const useAIImage = (url: string) => {
-    addImage(url);
+    replaceWithAIImage(url);
+  };
+  
+  // 问题3：点击AI助手按钮 - 进入选择模式
+  const handleAIAssistantClick = () => {
+    const canvas = fabricRef.current;
+    if (!canvas) return;
+    
+    // 隐藏AI面板，进入选择模式
+    setAiSelectionMode(true);
+    setShowAIPanel(false);
+    
+    // 改变鼠标样式
+    document.body.style.cursor = 'crosshair';
+    
+    // 禁用画布选择
+    canvas.selection = false;
+    canvas.discardActiveObject();
+    canvas.renderAll();
   };
 
   if (loading) {
@@ -858,7 +1277,7 @@ export default function EditorContent() {
           </button>
           
           <button 
-            onClick={() => setShowAIPanel(!showAIPanel)}
+            onClick={handleAIAssistantClick}
             style={{ 
               ...toolbarButtonStyle, 
               background: showAIPanel ? '#5B6BE6' : 'transparent',
@@ -911,6 +1330,15 @@ export default function EditorContent() {
         {showLeftPanel && (
           <div className="editor-left-panel" style={{ width: "260px", background: "white", borderRight: "1px solid #E2E8F0", padding: "16px", overflowY: "auto" }}>
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#2D3748', marginBottom: '16px' }}>组件库</h3>
+            
+            {/* 任务2：隐藏的文件输入 */}
+            <input
+              id="image-upload-input"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
               {components.map((comp) => (
@@ -1010,6 +1438,35 @@ export default function EditorContent() {
                 生成图片
               </button>
             </div>
+
+            {/* AI设置：生成数量 */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '13px', color: '#718096', marginBottom: '8px', display: 'block' }}>
+                生成数量
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[2, 3, 4].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setAiCount(n)}
+                    style={{
+                      padding: '6px 12px',
+                      border: aiCount === n ? '1px solid #5B6BE6' : '1px solid #E2E8F0',
+                      borderRadius: '4px',
+                      background: aiCount === n ? '#EEF2FF' : 'white',
+                      color: aiCount === n ? '#5B6BE6' : '#718096',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                    }}
+                  >
+                    {n} 个
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: '12px', color: '#A0AEC0', marginTop: '8px' }}>
+                预计消耗: {aiCount * 10} 积分
+              </p>
+            </div>
             
             {/* 输入框 */}
             <div style={{ marginBottom: '16px' }}>
@@ -1026,19 +1483,47 @@ export default function EditorContent() {
               />
             </div>
             
-            <button
-              onClick={handleAIGenerate}
-              disabled={aiLoading || !aiPrompt.trim()}
-              style={{
-                width: '100%', padding: '12px', background: aiLoading ? '#A0AEC0' : '#5B6BE6',
-                color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px',
-                fontWeight: 500, cursor: aiLoading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              }}
-            >
-              {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />}
-              {aiLoading ? '生成中...' : '生成'}
-            </button>
+            {/* 任务3：AI区域选择模式下的按钮 */}
+            {aiAreaMode ? (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={confirmAIArea}
+                  disabled={aiLoading}
+                  style={{
+                    flex: 1, padding: '12px', background: '#5B6BE6',
+                    color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px',
+                    fontWeight: 500, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  }}
+                >
+                  确认区域
+                </button>
+                <button
+                  onClick={cancelAIArea}
+                  style={{
+                    flex: 1, padding: '12px', background: '#E2E8F0',
+                    color: '#2D3748', border: 'none', borderRadius: '8px', fontSize: '14px',
+                    fontWeight: 500, cursor: 'pointer',
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleAIGenerate}
+                disabled={aiLoading || !aiPrompt.trim()}
+                style={{
+                  width: '100%', padding: '12px', background: aiLoading ? '#A0AEC0' : '#5B6BE6',
+                  color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px',
+                  fontWeight: 500, cursor: aiLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}
+              >
+                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />}
+                {aiLoading ? '生成中...' : '生成'}
+              </button>
+            )}
             
             {/* 结果展示 */}
             {aiResults.length > 0 && (
@@ -1086,7 +1571,7 @@ export default function EditorContent() {
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#2D3748', marginBottom: '16px' }}>属性面板</h3>
 
             {/* 字体选择 (仅文字) */}
-            {selectedObject.type === 'i-text' && (
+            {(selectedObject.type === 'i-text' || selectedObject.type === 'textbox') && (
               <div style={{ marginBottom: '20px' }}>
                 <label style={LabelStyle}>字体</label>
                 <select
@@ -1144,8 +1629,36 @@ export default function EditorContent() {
               </div>
             )}
 
+            {/* 任务1：倒角参数设置 - 仅矩形显示 */}
+            {selectedObject.type === 'rect' && (
+              <div style={{ marginBottom: '20px' }}>
+                <label style={LabelStyle}>倒角半径</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="50" 
+                    value={selectedObject.rx || 0} 
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value);
+                      const canvas = fabricRef.current;
+                      const activeObj = canvas?.getActiveObject();
+                      if (activeObj) {
+                        activeObj.set({ rx: v, ry: v });
+                        activeObj.dirty = true;
+                        canvas?.renderAll();
+                        setSelectedObject({ ...selectedObject, rx: v, ry: v });
+                      }
+                    }} 
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ fontSize: '13px', color: '#718096', minWidth: '30px' }}>{selectedObject.rx || 0}</span>
+                </div>
+              </div>
+            )}
+
             {/* 字体大小 (仅文字) */}
-            {selectedObject.type === 'i-text' && (
+            {(selectedObject.type === 'i-text' || selectedObject.type === 'textbox') && (
               <div style={{ marginBottom: '20px' }}>
                 <label style={LabelStyle}>字体大小</label>
                 <input type="number" value={selectedObject.fontSize || 24} onChange={(e) => updateSelected('fontSize', parseInt(e.target.value))} style={InputStyle} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,39 @@ import {
   LogOut,
 } from 'lucide-react';
 
+// 通用图标包装器 - 避免所有 lucide-react 图标的 Hydration 错误
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function IconWrapper({ icon, size = 18 }: { icon: any; size?: number }) {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return <span style={{ width: size, height: size, display: 'inline-block' }} />;
+  }
+  
+  const Icon = icon;
+  return <Icon size={size} />;
+}
+
+// 预包装的图标组件 - 使用 any 类型避免复杂的类型匹配
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Icons: Record<string, (props: any) => JSX.Element> = {
+  LayoutDashboard: (props: { size?: number }) => <IconWrapper icon={LayoutDashboard} {...props} />,
+  Folder: (props: { size?: number }) => <IconWrapper icon={Folder} {...props} />,
+  Book: (props: { size?: number }) => <IconWrapper icon={Book} {...props} />,
+  DollarSign: (props: { size?: number }) => <IconWrapper icon={DollarSign} {...props} />,
+  Bell: (props: { size?: number }) => <IconWrapper icon={Bell} {...props} />,
+  Building2: (props: { size?: number }) => <IconWrapper icon={Building2} {...props} />,
+  User: (props: { size?: number }) => <IconWrapper icon={User} {...props} />,
+  Printer: (props: { size?: number }) => <IconWrapper icon={Printer} {...props} />,
+  Settings: (props: { size?: number }) => <IconWrapper icon={Settings} {...props} />,
+  Search: (props: { size?: number }) => <IconWrapper icon={Search} {...props} />,
+  LogOut: (props: { size?: number }) => <IconWrapper icon={LogOut} {...props} />,
+};
+
 interface NavItem {
   name: string;
   href: string;
@@ -24,27 +57,27 @@ interface NavItem {
 }
 
 const userNavItems: NavItem[] = [
-  { name: '仪表盘', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
-  { name: '项目', href: '/projects', icon: <Folder size={18} /> },
-  { name: '电子书', href: '/ebooks', icon: <Book size={18} /> },
-  { name: '积分', href: '/points', icon: <DollarSign size={18} /> },
-  { name: '通知', href: '/notifications', icon: <Bell size={18} /> },
-  { name: '企业', href: '/enterprise', icon: <Building2 size={18} /> },
+  { name: '仪表盘', href: '/dashboard', icon: <Icons.LayoutDashboard size={18} /> },
+  { name: '项目', href: '/projects', icon: <Icons.Folder size={18} /> },
+  { name: '电子书', href: '/ebooks', icon: <Icons.Book size={18} /> },
+  { name: '积分', href: '/points', icon: <Icons.DollarSign size={18} /> },
+  { name: '通知', href: '/notifications', icon: <Icons.Bell size={18} /> },
+  { name: '企业', href: '/enterprise', icon: <Icons.Building2 size={18} /> },
 ];
 
 const adminNavItems: NavItem[] = [
-  { name: '仪表盘', href: '/admin', icon: <LayoutDashboard size={18} /> },
-  { name: '用户', href: '/admin/users', icon: <User size={18} /> },
-  { name: '项目', href: '/admin/projects', icon: <Folder size={18} /> },
-  { name: '订单', href: '/admin/orders', icon: <Printer size={18} /> },
-  { name: '电子书', href: '/admin/ebooks', icon: <Book size={18} /> },
-  { name: '字体', href: '/admin/fonts', icon: <Settings size={18} /> },
-  { name: '分组', href: '/admin/groups', icon: <User size={18} /> },
-  { name: '通知', href: '/admin/notifications', icon: <Bell size={18} /> },
-  { name: '印刷厂', href: '/admin/printers', icon: <Printer size={18} /> },
-  { name: 'AI设置', href: '/admin/ai-settings', icon: <Settings size={18} /> },
-  { name: '设置', href: '/admin/settings', icon: <Settings size={18} /> },
-  { name: '企业', href: '/admin/enterprise', icon: <Building2 size={18} /> },
+  { name: '仪表盘', href: '/admin', icon: <Icons.LayoutDashboard size={18} /> },
+  { name: '用户', href: '/admin/users', icon: <Icons.User size={18} /> },
+  { name: '项目', href: '/admin/projects', icon: <Icons.Folder size={18} /> },
+  { name: '订单', href: '/admin/orders', icon: <Icons.Printer size={18} /> },
+  { name: '电子书', href: '/admin/ebooks', icon: <Icons.Book size={18} /> },
+  { name: '字体', href: '/admin/fonts', icon: <Icons.Settings size={18} /> },
+  { name: '分组', href: '/admin/groups', icon: <Icons.User size={18} /> },
+  { name: '通知', href: '/admin/notifications', icon: <Icons.Bell size={18} /> },
+  { name: '印刷厂', href: '/admin/printers', icon: <Icons.Printer size={18} /> },
+  { name: 'AI设置', href: '/admin/ai-settings', icon: <Icons.Settings size={18} /> },
+  { name: '设置', href: '/admin/settings', icon: <Icons.Settings size={18} /> },
+  { name: '企业', href: '/admin/enterprise', icon: <Icons.Building2 size={18} /> },
 ];
 
 interface DashboardLayoutProps {
@@ -87,7 +120,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '20px', color: 'white'
             }}>
-              <Book size={20} />
+              <Icons.Book size={20} />
             </div>
             <span style={{ fontSize: '18px', fontWeight: 700, color: '#2D3748' }}>
               {isAdmin ? '管理后台' : '会议出版'}
@@ -139,7 +172,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '16px', color: 'rgb(91, 107, 230)'
             }}>
-              <User size={18} />
+              <Icons.User size={18} />
             </div>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 500, color: '#2D3748' }}>用户</div>
@@ -158,7 +191,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}
           >
-            <LogOut size={16} /> 退出登录
+            <Icons.LogOut size={16} /> 退出登录
           </button>
         </div>
       </aside>
@@ -185,7 +218,7 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
             borderRadius: '8px', width: '320px',
             border: '1px solid #E2E8F0'
           }}>
-            <span style={{ color: 'rgb(91, 107, 230)', fontSize: '14px' }}><Search size={16} /></span>
+            <span style={{ color: 'rgb(91, 107, 230)', fontSize: '14px' }}><Icons.Search size={16} /></span>
             <input
               type="text"
               placeholder="搜索项目、文档..."
@@ -203,13 +236,13 @@ export default function DashboardLayout({ children, isAdmin = false }: Dashboard
               background: '#F5F7FB', border: '1px solid #E2E8F0',
               borderRadius: '8px', color: 'rgb(91, 107, 230)', fontSize: '16px',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}><Bell size={18} /></button>
+            }}><Icons.Bell size={18} /></button>
             <button style={{
               width: '40px', height: '40px',
               background: 'linear-gradient(135deg, #5B6BE6 0%, #9B6BF5 100%)',
               border: 'none', borderRadius: '8px', color: 'white',
               fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}><Settings size={18} /></button>
+            }}><Icons.Settings size={18} /></button>
           </div>
         </header>
 
