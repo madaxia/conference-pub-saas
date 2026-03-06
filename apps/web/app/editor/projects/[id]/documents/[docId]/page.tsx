@@ -13,35 +13,27 @@ import { jsPDF } from 'jspdf';
 // 动态导入 fabric.js (客户端 Only)
 let fabric: any = null;
 
-// 可用字体列表
-// 中文字体映射表 - 本地系统字体
-const fonts = [
-  { value: 'SimHei', label: '黑体' },
-  { value: 'SimSun', label: '宋体' },
-  { value: 'Microsoft YaHei', label: '微软雅黑' },
-  { value: 'KaiTi', label: '楷体' },
-  { value: 'FangSong', label: '仿宋' },
-  { value: 'YouYuan', label: '幼圆' },
-  { value: 'STSong', label: '华文宋体' },
-  { value: 'STKaiti', label: '华文楷体' },
-  { value: 'STHeiti', label: '华文黑体' },
-  { value: 'Arial', label: 'Arial' },
-  { value: 'Times New Roman', label: 'Times New Roman' },
-];
+// 引入常量（components 需要保留在此文件中因为使用 JSX）
+import { fonts, pageSizes, DEFAULT_PAGE_SIZE } from './constants';
+import { 
+  CANVAS_CONFIG,
+  CANVAS_CENTER_OFFSET,
+  CANVAS_DEFAULT_SIZE,
+  ARTBOARD_OFFSET,
+  GRID_CONFIG,
+  ELEMENT_SIZES,
+  ZOOM_CONFIG,
+  STYLE_CONFIG,
+  STROKE_CONFIG,
+} from './constants/editor';
+import { toolbarButtonStyle, LabelStyle, InputStyle, InputLabelStyle } from './styles/editor';
 
-// 动态加载字体
-// 本地字体不需要预加载
-const loadFont = async (fontFamily: string) => {
-  };
-
-// AI 生成类型
-type AIGenerateType = 'text' | 'image';
-
+// 组件列表（需要 JSX，保留在主文件中）
 interface EditorElement {
   id: string;
   type: string;
   name: string;
-  icon: any;
+  icon: React.ReactNode;
 }
 
 const components: EditorElement[] = [
@@ -52,52 +44,81 @@ const components: EditorElement[] = [
   { id: 'image', type: 'image', name: '图片', icon: <ImagePlus size={18} /> },
 ];
 
+// 引入 hooks
+import { useCanvasState, useEditorHistory, useAIEditor, useToolbarState, AIGenerateType } from './hooks';
+
 export default function EditorContent() {
+  // 使用 hooks
+  const {
+    zoom,
+    setZoom,
+    pageSize,
+    setPageSize,
+    selectedObject,
+    setSelectedObject,
+    loading,
+    setLoading,
+  } = useCanvasState();
+  
+  const {
+    showGrid,
+    setShowGrid,
+    gridDensity,
+    setGridDensity,
+    gridColor,
+    setGridColor,
+    activeTool,
+    setActiveTool,
+    activeToolRef,
+  } = useToolbarState();
+  
+  const {
+    history,
+    setHistory,
+    historyIndex,
+    setHistoryIndex,
+  } = useEditorHistory();
+  
+  const {
+    aiType,
+    setAiType,
+    aiPrompt,
+    setAiPrompt,
+    aiLoading,
+    setAiLoading,
+    aiResults,
+    setAiResults,
+    aiCount,
+    setAiCount,
+    aiAreaMode,
+    setAiAreaMode,
+    aiAreaRef,
+    aiOverlayRef,
+    aiPreviewMode,
+    setAiPreviewMode,
+    aiPreviewContent,
+    setAiPreviewContent,
+    aiPreviewRectRef,
+    aiSelectionMode,
+    setAiSelectionMode,
+    aiSelectionModeRef,
+    aiSelectionStartRef,
+    aiSelectionStart,
+    setAiSelectionStart,
+    aiSelectionRectRef,
+  } = useAIEditor();
+  
+  // 面板显示状态
+  const [showLeftPanel, setShowLeftPanel] = useState(true);
+  const [showRightPanel, setShowRightPanel] = useState(true);
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  
+  // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const gridLinesRef = useRef<any[]>([]);
-  const [zoom, setZoom] = useState(100);
-  const [selectedObject, setSelectedObject] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [loading, setLoading] = useState(true);
-  const [pageSize, setPageSize] = useState('A4');
-  const [showLeftPanel, setShowLeftPanel] = useState(true);
-  const [showRightPanel, setShowRightPanel] = useState(true);
-  const [showAIPanel, setShowAIPanel] = useState(false);
-  const [showGrid, setShowGrid] = useState(false);
-  const [gridDensity, setGridDensity] = useState(20);
-  const [gridColor, setGridColor] = useState('#CBD5E1');
-  const [activeTool, setActiveTool] = useState<'move' | 'hand'>('move');
-  const activeToolRef = useRef(activeTool);
   const gridRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    activeToolRef.current = activeTool;
-  }, [activeTool]);
-  
-  // 页面尺寸配置
-  const pageSizes: Record<string, { width: number; height: number }> = {
-    'A4': { width: 595, height: 842 },
-    'A5': { width: 420, height: 595 },
-    'Letter': { width: 612, height: 792 },
-    '自定义': { width: 600, height: 800 },
-  };
-  
-  // AI 状态
-  const [aiType, setAiType] = useState<AIGenerateType>('text');
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResults, setAiResults] = useState<any[]>([]);
-  const [aiAreaMode, setAiAreaMode] = useState(false);
-  const [aiCount, setAiCount] = useState(3); // 生成数量
-  const aiAreaRef = useRef<any>(null);
-  const aiOverlayRef = useRef<any>(null);
-  
-  // 问题3：AI选择模式状态
-  const [aiSelectionMode, setAiSelectionMode] = useState(false);
-  const [aiSelectionStart, setAiSelectionStart] = useState<{x: number, y: number} | null>(null);
-  const aiSelectionRectRef = useRef<any>(null);
 
   // 初始化 Fabric.js
   useEffect(() => {
@@ -360,75 +381,129 @@ export default function EditorContent() {
             }
           });
           
-          // 问题3：AI选择模式 - 监听鼠标事件实现框选
+          // AI选择模式 - 监听鼠标事件实现框选
           canvas.on('mouse:down', function(opt: any) {
             // 如果不在AI选择模式，不处理
-            if (!aiSelectionMode) return;
+            if (!aiSelectionModeRef.current) return;
             
-            const pointer = canvas.getPointer(opt.e);
-            setAiSelectionStart({ x: pointer.x, y: pointer.y });
+            const pointer = canvas.getScenePoint ? canvas.getScenePoint(opt.e) : { x: opt.e.clientX, y: opt.e.clientY };
+            aiSelectionStartRef.current = { x: pointer.x, y: pointer.y };
             
-            // 创建虚线矩形
+            // 创建可调整大小的虚线矩形
             const rect = new fabric.Rect({
               left: pointer.x,
               top: pointer.y,
               width: 0,
               height: 0,
-              fill: 'rgba(91, 107, 230, 0.1)',
+              fill: 'rgba(91, 107, 230, 0.15)',
               stroke: '#5B6BE6',
-              strokeDashArray: [5, 5],
-              selectable: false,
-              evented: false,
+              strokeWidth: 2,
+              strokeDashArray: [8, 4],
+              selectable: true,
+              evented: true,
+              hasControls: true,
+              hasBorders: true,
+              lockRotation: true,
+              cornerStyle: 'circle',
+              cornerColor: '#5B6BE6',
+              cornerStrokeColor: '#fff',
+              borderColor: '#5B6BE6',
+              transparentCorners: false,
+              cornerSize: 10,
+              padding: 5,
               isAISelection: true,
             });
             canvas.add(rect);
             aiSelectionRectRef.current = rect;
+            
+            // 设置为活动对象，显示控制手柄
+            canvas.setActiveObject(rect);
+            rect.setCoords();
+            canvas.renderAll();
           });
           
           canvas.on('mouse:move', function(opt: any) {
             // 如果不在AI选择模式，不处理
-            if (!aiSelectionMode || !aiSelectionStart || !aiSelectionRectRef.current) return;
+            if (!aiSelectionModeRef.current || !aiSelectionStartRef.current || !aiSelectionRectRef.current) return;
             
-            const pointer = canvas.getPointer(opt.e);
-            const width = pointer.x - aiSelectionStart.x;
-            const height = pointer.y - aiSelectionStart.y;
+            const pointer = canvas.getScenePoint ? canvas.getScenePoint(opt.e) : { x: opt.e.clientX, y: opt.e.clientY };
+            const start = aiSelectionStartRef.current;
+            const width = pointer.x - start.x;
+            const height = pointer.y - start.y;
+            
+            // 修复：始终从左上角拖到右下角
+            // 如果用户往回拖，不更新选区（或者可以取消选区）
+            if (width < 0 || height < 0) {
+              // 用户往回拖，保持当前选区或缩小
+              return;
+            }
             
             aiSelectionRectRef.current.set({
-              width: Math.abs(width),
-              height: Math.abs(height),
-              left: width > 0 ? aiSelectionStart.x : pointer.x,
-              top: height > 0 ? aiSelectionStart.y : pointer.y,
+              width: width,
+              height: height,
+              left: start.x,
+              top: start.y,
             });
             canvas.renderAll();
           });
           
           canvas.on('mouse:up', function(opt: any) {
             // 如果不在AI选择模式，不处理
-            if (!aiSelectionMode || !aiSelectionRectRef.current) return;
+            if (!aiSelectionModeRef.current || !aiSelectionRectRef.current) return;
             
-            // 恢复鼠标样式
-            document.body.style.cursor = 'default';
-            
-            // 保存选择区域信息到 ref
             const rect = aiSelectionRectRef.current;
+            
+            // 检查尺寸是否足够
+            const width = (rect.width || 0) * (rect.scaleX || 1);
+            const height = (rect.height || 0) * (rect.scaleY || 1);
+            
+            if (width < 30 || height < 30) {
+              canvas.remove(rect);
+              aiSelectionRectRef.current = null;
+              aiSelectionStartRef.current = null;
+              return;
+            }
+            
+            // 保持选中状态，允许调整大小
+            canvas.setActiveObject(rect);
+            rect.setCoords();
+            canvas.renderAll();
+            
+            // 更新选区信息
             aiAreaRef.current = {
               left: rect.left,
               top: rect.top,
-              width: rect.width,
-              height: rect.height,
+              width: width,
+              height: height,
             };
-            
-            // 清除选择矩形
-            canvas.remove(rect);
-            aiSelectionRectRef.current = null;
-            setAiSelectionStart(null);
             
             // 退出选择模式，显示AI面板
             setAiSelectionMode(false);
+            aiSelectionModeRef.current = false;
             setShowAIPanel(true);
+            
+            // 恢复鼠标样式
+            document.body.style.cursor = 'default';
+            canvas.defaultCursor = 'grab';
+            canvas.hoverCursor = 'move';
             
             // 保存到历史
             saveToHistory();
+          });
+          
+          // 监听AI区域调整大小
+          canvas.on('object:modified', function(opt: any) {
+            const obj = opt.target;
+            if (obj && obj.isAISelection) {
+              const rect = obj;
+              aiAreaRef.current = {
+                left: rect.left,
+                top: rect.top,
+                width: (rect.width || 0) * (rect.scaleX || 1),
+                height: (rect.height || 0) * (rect.scaleY || 1),
+              };
+              saveToHistory();
+            }
           });
           
           // 保存初始状态
@@ -866,18 +941,27 @@ export default function EditorContent() {
     fabricRef.current.renderAll();
   };
 
-  // AI 生成 (带演示模式) - 任务3：支持选中替换和无选中区域选择
+  // AI 生成 - 直接生成选项，不显示灰色遮罩
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim()) return;
     
     const canvas = fabricRef.current;
     if (!canvas) return;
     
+    // 清理任何残留的AI临时元素
+    const objects = canvas.getObjects();
+    objects.forEach((obj: any) => {
+      if (obj.isAIOverlay || obj.isAIArea || obj.isAIHint) {
+        canvas.remove(obj);
+      }
+    });
+    setAiAreaMode(false);
+    
     const activeObj = canvas.getActiveObject();
     
     // 如果有选中对象且类型匹配，直接替换
     if (activeObj) {
-      if (aiType === 'text' && activeObj.type === 'i-text') {
+      if (aiType === 'text' && (activeObj.type === 'i-text' || activeObj.type === 'textbox')) {
         // 选中文字，生成后替换
         setAiLoading(true);
         setAiResults([]);
@@ -924,68 +1008,37 @@ export default function EditorContent() {
       }
     }
     
-    // 无选中：进入区域选择模式
-    setAiAreaMode(true);
+    // 无选中或选中不匹配：直接在画布中心生成内容（稍后用户选择后添加到选区或中心）
+    // 不再显示灰色遮罩，直接生成选项
+    setAiLoading(true);
+    setAiResults([]);
     
-    // 在画布中心创建半透明矩形区域
-    const centerX = canvas.width! / 2;
-    const centerY = canvas.height! / 2;
-    const areaWidth = aiType === 'text' ? 400 : 300;
-    const areaHeight = aiType === 'text' ? 60 : 200;
-    
-    // 创建半透明遮罩
-    const overlay = new fabric.Rect({
-      left: 0,
-      top: 0,
-      width: canvas.width,
-      height: canvas.height,
-      fill: 'rgba(0, 0, 0, 0.3)',
-      selectable: false,
-      evented: false,
-      isAIOverlay: true,
-    });
-    canvas.add(overlay);
-    canvas.sendObjectToBack(overlay);
-    
-    // 创建可拖拽的区域指示器
-    const aiArea = new fabric.Rect({
-      left: centerX - areaWidth / 2,
-      top: centerY - areaHeight / 2,
-      width: areaWidth,
-      height: areaHeight,
-      fill: 'rgba(91, 107, 230, 0.2)',
-      stroke: '#5B6BE6',
-      strokeWidth: 2,
-      strokeDashArray: [8, 4],
-      rx: 8,
-      ry: 8,
-      selectable: true,
-      hasControls: true,
-      hasBorders: true,
-      isAIArea: true,
-    });
-    canvas.add(aiArea);
-    aiAreaRef.current = aiArea;
-    aiOverlayRef.current = overlay;
-    
-    // 添加提示文字
-    const hintText = new fabric.IText(
-      aiType === 'text' ? '拖拽调整文字区域' : '拖拽调整图片区域',
-      {
-        left: centerX,
-        top: centerY,
-        originX: 'center',
-        originY: 'center',
-        fontSize: 14,
-        fill: '#5B6BE6',
-        selectable: false,
-        evented: false,
-        isAIHint: true,
+    try {
+      const endpoint = aiType === 'text' 
+        ? 'http://localhost:3001/ai/generate-text'
+        : 'http://localhost:3001/ai/generate-image';
+      
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt: aiPrompt,
+          type: aiType === 'text' ? 'content' : undefined,
+          style: aiType === 'image' ? 'illustration' : undefined,
+        }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setAiResults(data.results || []);
+      } else {
+        setAiResults(getDemoResults(aiType));
       }
-    );
-    canvas.add(hintText);
-    
-    canvas.renderAll();
+    } catch (error) {
+      setAiResults(getDemoResults(aiType));
+    } finally {
+      setAiLoading(false);
+    }
   };
   
   // 确认AI区域并生成
@@ -1085,12 +1138,14 @@ export default function EditorContent() {
     }
   };
 
-  // 任务3：AI生成功能优化 - 选中图片/文字时替换，无选中时创建区域
+  // AI生成功能 - 选中图片/文字时替换，有选区时放到选区，无选中时添加到画布
   // 替换选中图片
   const replaceWithAIImage = (url: string) => {
     if (!fabricRef.current || !fabric) return;
     
-    const activeObj = fabricRef.current.getActiveObject();
+    const canvas = fabricRef.current;
+    const activeObj = canvas.getActiveObject();
+    const aiRect = aiSelectionRectRef.current;
     
     fabric.FabricImage.fromURL(url, (img: any) => {
       if (activeObj && (activeObj.type === 'image' || activeObj.type === 'fabric-image')) {
@@ -1100,24 +1155,47 @@ export default function EditorContent() {
         const scaleX = activeObj.scaleX || 1;
         const scaleY = activeObj.scaleY || 1;
         
-        fabricRef.current.remove(activeObj);
+        canvas.remove(activeObj);
         img.set({ left, top, scaleX, scaleY });
-        fabricRef.current.add(img);
-        fabricRef.current.setActiveObject(img);
+        canvas.add(img);
+        canvas.setActiveObject(img);
+      } else if (aiRect) {
+        // 有AI选区：添加到选区位置并适应选区大小
+        const rectWidth = (aiRect.width || 0) * (aiRect.scaleX || 1);
+        const rectHeight = (aiRect.height || 0) * (aiRect.scaleY || 1);
+        
+        // 计算缩放以适应选区
+        const imgWidth = img.width || 300;
+        const imgHeight = img.height || 200;
+        const scale = Math.min(rectWidth / imgWidth, rectHeight / imgHeight, 1);
+        
+        img.set({
+          left: aiRect.left,
+          top: aiRect.top,
+          scaleX: scale,
+          scaleY: scale,
+        });
+        canvas.add(img);
+        canvas.setActiveObject(img);
+        
+        // 移除AI选区
+        canvas.remove(aiRect);
+        aiSelectionRectRef.current = null;
+        aiAreaRef.current = null;
       } else {
         // 无选中：添加到画布中心
-        const centerX = fabricRef.current.width! / 2;
-        const centerY = fabricRef.current.height! / 2;
+        const centerX = canvas.width! / 2;
+        const centerY = canvas.height! / 2;
         img.set({
           left: centerX - 150,
           top: centerY - 100,
           scaleX: 0.5,
           scaleY: 0.5,
         });
-        fabricRef.current.add(img);
-        fabricRef.current.setActiveObject(img);
+        canvas.add(img);
+        canvas.setActiveObject(img);
       }
-      fabricRef.current.renderAll();
+      canvas.renderAll();
       saveToHistory();
     });
   };
@@ -1128,6 +1206,7 @@ export default function EditorContent() {
     
     const canvas = fabricRef.current;
     const activeObj = canvas.getActiveObject();
+    const aiRect = aiSelectionRectRef.current;
     
     // 支持 i-text 和 textbox
     if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'textbox')) {
@@ -1150,6 +1229,24 @@ export default function EditorContent() {
       });
       canvas.add(newText);
       canvas.setActiveObject(newText);
+    } else if (aiRect) {
+      // 有AI选区：添加到选区位置
+      const rectWidth = (aiRect.width || 0) * (aiRect.scaleX || 1);
+      const newText = new fabric.Textbox(content, {
+        left: aiRect.left,
+        top: aiRect.top,
+        width: rectWidth,
+        fontSize: 16,
+        fontFamily: 'SimHei, sans-serif',
+        fill: '#2D3748',
+      });
+      canvas.add(newText);
+      canvas.setActiveObject(newText);
+      
+      // 移除AI选区
+      canvas.remove(aiRect);
+      aiSelectionRectRef.current = null;
+      aiAreaRef.current = null;
     } else {
       // 无选中：添加新文字到画布中心
       const centerX = canvas.width! / 2;
@@ -1168,31 +1265,201 @@ export default function EditorContent() {
     saveToHistory();
   };
 
+  // 预览 AI 文本结果 - 显示在虚线框中
+  const previewAIText = (content: string) => {
+    if (!fabricRef.current || !fabric) return;
+    
+    const canvas = fabricRef.current;
+    const aiRect = aiSelectionRectRef.current;
+    
+    // 计算放置位置
+    let left: number, top: number, width: number;
+    
+    if (aiRect) {
+      // 有选区：放在选区位置
+      left = aiRect.left;
+      top = aiRect.top;
+      width = (aiRect.width || 0) * (aiRect.scaleX || 1);
+    } else {
+      // 无选区：放在画布中心，默认宽度300
+      left = canvas.width! / 2 - 150;
+      top = canvas.height! / 2;
+      width = 300;
+    }
+    
+    // 创建预览文字
+    const previewText = new fabric.Textbox(content, {
+      left,
+      top,
+      width,
+      fontSize: 14,
+      fontFamily: 'SimHei, sans-serif',
+      fill: '#2D3748',
+      stroke: '#5B6BE6',
+      strokeWidth: 2,
+      strokeDashArray: [6, 3],
+      selectable: true,
+      evented: true,
+      isAIPreview: true,
+    });
+    
+    canvas.add(previewText);
+    aiPreviewRectRef.current = previewText;
+    canvas.setActiveObject(previewText);
+    canvas.renderAll();
+    
+    // 设置预览状态
+    setAiPreviewContent({ type: 'text', content });
+    setAiPreviewMode(true);
+  };
+
+  // 预览 AI 图片结果 - 显示在虚线框中
+  const previewAIImage = (url: string) => {
+    if (!fabricRef.current || !fabric) return;
+    
+    const canvas = fabricRef.current;
+    const aiRect = aiSelectionRectRef.current;
+    
+    fabric.FabricImage.fromURL(url, (img: any) => {
+      let left: number, top: number, targetWidth: number, targetHeight: number;
+      
+      if (aiRect) {
+        // 有选区：适应选区大小
+        targetWidth = (aiRect.width || 0) * (aiRect.scaleX || 1);
+        targetHeight = (aiRect.height || 0) * (aiRect.scaleY || 1);
+        left = aiRect.left;
+        top = aiRect.top;
+      } else {
+        // 无选区：使用默认大小
+        targetWidth = 300;
+        targetHeight = 200;
+        left = canvas.width! / 2 - 150;
+        top = canvas.height! / 2 - 100;
+      }
+      
+      // 计算缩放
+      const imgWidth = img.width || 300;
+      const imgHeight = img.height || 200;
+      const scale = Math.min(targetWidth / imgWidth, targetHeight / imgHeight, 1);
+      
+      img.set({
+        left,
+        top,
+        scaleX: scale,
+        scaleY: scale,
+        stroke: '#5B6BE6',
+        strokeWidth: 2,
+        strokeDashArray: [6, 3],
+        selectable: true,
+        evented: true,
+        isAIPreview: true,
+      });
+      
+      canvas.add(img);
+      aiPreviewRectRef.current = img;
+      canvas.setActiveObject(img);
+      canvas.renderAll();
+      
+      // 设置预览状态
+      setAiPreviewContent({ type: 'image', content: url });
+      setAiPreviewMode(true);
+    });
+  };
+
+  // 确认预览内容 - 真正添加到画布
+  const confirmAIPreview = () => {
+    if (!fabricRef.current || !aiPreviewRectRef.current || !aiPreviewContent) return;
+    
+    const canvas = fabricRef.current;
+    const previewObj = aiPreviewRectRef.current;
+    
+    // 移除虚线边框，保留内容
+    previewObj.set({
+      stroke: '',
+      strokeWidth: 0,
+      strokeDashArray: [],
+    });
+    previewObj.set('isAIPreview', false);
+    previewObj.setCoords();
+    canvas.renderAll();
+    
+    // 清理选区（如果有）
+    if (aiSelectionRectRef.current) {
+      canvas.remove(aiSelectionRectRef.current);
+      aiSelectionRectRef.current = null;
+      aiAreaRef.current = null;
+    }
+    
+    // 重置预览状态
+    setAiPreviewMode(false);
+    setAiPreviewContent(null);
+    aiPreviewRectRef.current = null;
+    
+    saveToHistory();
+  };
+
+  // 取消预览
+  const cancelAIPreview = () => {
+    if (!fabricRef.current) return;
+    
+    const canvas = fabricRef.current;
+    
+    // 移除预览对象
+    if (aiPreviewRectRef.current) {
+      canvas.remove(aiPreviewRectRef.current);
+      aiPreviewRectRef.current = null;
+    }
+    
+    // 重置预览状态
+    setAiPreviewMode(false);
+    setAiPreviewContent(null);
+    
+    canvas.renderAll();
+  };
+
   // 使用AI生成的文本 (保留旧函数用于兼容性)
   const useAIText = (content: string) => {
-    replaceWithAIText(content);
+    // 先预览
+    previewAIText(content);
   };
 
   // 使用AI生成的图片 (保留旧函数用于兼容性)
   const useAIImage = (url: string) => {
-    replaceWithAIImage(url);
+    // 先预览
+    previewAIImage(url);
   };
   
-  // 问题3：点击AI助手按钮 - 进入选择模式
+  // 点击AI助手按钮 - 直接显示AI面板，不需要先框选区域
   const handleAIAssistantClick = () => {
     const canvas = fabricRef.current;
     if (!canvas) return;
     
-    // 隐藏AI面板，进入选择模式
-    setAiSelectionMode(true);
-    setShowAIPanel(false);
+    // 清除之前的AI选区（如果有）
+    if (aiSelectionRectRef.current) {
+      canvas.remove(aiSelectionRectRef.current);
+      aiSelectionRectRef.current = null;
+    }
     
-    // 改变鼠标样式
-    document.body.style.cursor = 'crosshair';
+    // 清理任何残留的AI临时元素
+    const objects = canvas.getObjects();
+    objects.forEach((obj: any) => {
+      if (obj.isAIOverlay || obj.isAIArea || obj.isAIHint) {
+        canvas.remove(obj);
+      }
+    });
     
-    // 禁用画布选择
-    canvas.selection = false;
-    canvas.discardActiveObject();
+    // 显示AI面板，不需要先框选区域
+    setAiSelectionMode(false);
+    aiSelectionModeRef.current = false;
+    setShowAIPanel(true);
+    
+    // 恢复鼠标样式
+    document.body.style.cursor = 'default';
+    canvas.defaultCursor = 'move';
+    canvas.hoverCursor = 'move';
+    
+    // 恢复画布选择
+    canvas.selection = true;
     canvas.renderAll();
   };
 
@@ -1280,8 +1547,8 @@ export default function EditorContent() {
             onClick={handleAIAssistantClick}
             style={{ 
               ...toolbarButtonStyle, 
-              background: showAIPanel ? '#5B6BE6' : 'transparent',
-              color: showAIPanel ? 'white' : '#718096',
+              background: showAIPanel || aiSelectionMode ? '#5B6BE6' : 'transparent',
+              color: showAIPanel || aiSelectionMode ? 'white' : '#718096',
             }} 
             title="AI助手"
           >
@@ -1407,11 +1674,41 @@ export default function EditorContent() {
         </div>
 
         {/* AI 面板 */}
-        {showAIPanel && (
+        {(showAIPanel || (aiSelectionRectRef.current && !aiSelectionMode)) && (
           <div className="editor-ai-panel" style={{ width: "320px", background: "white", borderLeft: "1px solid #E2E8F0", padding: "16px", overflowY: "auto" }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#2D3748', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Sparkles size={18} style={{ color: 'rgb(91, 107, 230)' }} /> AI 助手
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#2D3748', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={18} style={{ color: 'rgb(91, 107, 230)' }} /> AI 助手
+              </h3>
+              <button 
+                onClick={() => {
+                  if (aiSelectionRectRef.current) {
+                    fabricRef.current?.remove(aiSelectionRectRef.current);
+                    aiSelectionRectRef.current = null;
+                  }
+                  setShowAIPanel(false);
+                }}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#718096', fontSize: '16px' }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* 选区信息 */}
+            {aiSelectionRectRef.current && (
+              <div style={{ padding: '12px', background: '#F0F4FF', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: '#5B6BE6', fontWeight: 600, marginBottom: '8px' }}>选区信息</div>
+                <div style={{ fontSize: '11px', color: '#718096', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                  <span>X: {Math.round(aiSelectionRectRef.current.left || 0)}px</span>
+                  <span>Y: {Math.round(aiSelectionRectRef.current.top || 0)}px</span>
+                  <span>宽: {Math.round((aiSelectionRectRef.current.width || 0) * (aiSelectionRectRef.current.scaleX || 1))}px</span>
+                  <span>高: {Math.round((aiSelectionRectRef.current.height || 0) * (aiSelectionRectRef.current.scaleY || 1))}px</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#A0AEC0', marginTop: '6px' }}>
+                  拖拽选区边缘可调整大小
+                </div>
+              </div>
+            )}
             
             {/* 生成类型选择 */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
@@ -1438,6 +1735,66 @@ export default function EditorContent() {
                 生成图片
               </button>
             </div>
+
+            {/* 框选按钮 - 让用户先框选区域 */}
+            {!aiSelectionRectRef.current && !aiPreviewMode && (
+              <div style={{ marginBottom: '16px' }}>
+                <button
+                  onClick={() => {
+                    // 进入框选模式
+                    setAiSelectionMode(true);
+                    aiSelectionModeRef.current = true;
+                    document.body.style.cursor = 'crosshair';
+                    if (fabricRef.current) {
+                      fabricRef.current.selection = false;
+                      fabricRef.current.defaultCursor = 'crosshair';
+                      fabricRef.current.hoverCursor = 'crosshair';
+                      fabricRef.current.discardActiveObject();
+                      fabricRef.current.renderAll();
+                    }
+                  }}
+                  style={{
+                    width: '100%', padding: '10px', background: '#F5F7FB', color: '#5B6BE6',
+                    border: '1px dashed #5B6BE6', borderRadius: '8px', fontSize: '13px', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                  </svg>
+                  先框选区域
+                </button>
+              </div>
+            )}
+
+            {/* 选区信息 */}
+            {aiSelectionRectRef.current && !aiPreviewMode && (
+              <div style={{ padding: '12px', background: '#F0F4FF', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: '#5B6BE6', fontWeight: 600, marginBottom: '8px' }}>选区信息</div>
+                <div style={{ fontSize: '11px', color: '#718096', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                  <span>X: {Math.round(aiSelectionRectRef.current.left || 0)}px</span>
+                  <span>Y: {Math.round(aiSelectionRectRef.current.top || 0)}px</span>
+                  <span>宽: {Math.round((aiSelectionRectRef.current.width || 0) * (aiSelectionRectRef.current.scaleX || 1))}px</span>
+                  <span>高: {Math.round((aiSelectionRectRef.current.height || 0) * (aiSelectionRectRef.current.scaleY || 1))}px</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (fabricRef.current && aiSelectionRectRef.current) {
+                      fabricRef.current.remove(aiSelectionRectRef.current);
+                      aiSelectionRectRef.current = null;
+                      aiAreaRef.current = null;
+                      fabricRef.current.renderAll();
+                    }
+                  }}
+                  style={{
+                    marginTop: '8px', padding: '4px 8px', background: 'transparent', color: '#EF4444',
+                    border: '1px solid #EF4444', borderRadius: '4px', fontSize: '11px', cursor: 'pointer',
+                  }}
+                >
+                  清除选区
+                </button>
+              </div>
+            )}
 
             {/* AI设置：生成数量 */}
             <div style={{ marginBottom: '16px' }}>
@@ -1535,31 +1892,65 @@ export default function EditorContent() {
                       <div>
                         <p style={{ fontSize: '13px', color: '#2D3748', marginBottom: '8px', lineHeight: 1.6 }}>{result.content}</p>
                         <button
-                          onClick={() => useAIText(result.content)}
+                          onClick={() => previewAIText(result.content)}
+                          disabled={aiPreviewMode}
                           style={{
-                            padding: '6px 12px', background: '#5B6BE6', color: 'white',
-                            border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer',
+                            padding: '6px 12px', background: aiPreviewMode ? '#A0AEC0' : '#5B6BE6', color: 'white',
+                            border: 'none', borderRadius: '6px', fontSize: '12px', cursor: aiPreviewMode ? 'not-allowed' : 'pointer',
                           }}
                         >
-                          插入到画布
+                          预览
                         </button>
                       </div>
                     ) : (
                       <div>
                         <img src={result.thumbnail || result.url} alt="AI生成" style={{ width: '100%', borderRadius: '6px', marginBottom: '8px' }} />
                         <button
-                          onClick={() => useAIImage(result.url)}
+                          onClick={() => previewAIImage(result.url)}
+                          disabled={aiPreviewMode}
                           style={{
-                            width: '100%', padding: '8px', background: '#5B6BE6', color: 'white',
-                            border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer',
+                            width: '100%', padding: '8px', background: aiPreviewMode ? '#A0AEC0' : '#5B6BE6', color: 'white',
+                            border: 'none', borderRadius: '6px', fontSize: '12px', cursor: aiPreviewMode ? 'not-allowed' : 'pointer',
                           }}
                         >
-                          插入到画布
+                          预览
                         </button>
                       </div>
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+            
+            {/* 预览模式：显示确认/取消按钮 */}
+            {aiPreviewMode && (
+              <div style={{ marginTop: '20px', padding: '16px', background: '#FEF3C7', borderRadius: '8px', border: '1px solid #F59E0B' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#92400E', marginBottom: '12px' }}>
+                  📍 预览模式
+                </div>
+                <p style={{ fontSize: '12px', color: '#92400E', marginBottom: '12px' }}>
+                  内容已显示在虚线框中，虚线框内可调整位置和大小
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={confirmAIPreview}
+                    style={{
+                      flex: 1, padding: '10px', background: '#10B981', color: 'white',
+                      border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                    }}
+                  >
+                    ✓ 确认
+                  </button>
+                  <button
+                    onClick={cancelAIPreview}
+                    style={{
+                      flex: 1, padding: '10px', background: '#EF4444', color: 'white',
+                      border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                    }}
+                  >
+                    ✕ 取消
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -1700,12 +2091,3 @@ export default function EditorContent() {
     </div>
   );
 }
-
-const toolbarButtonStyle = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px',
-  background: 'transparent', border: 'none', borderRadius: '8px', color: '#718096', cursor: 'pointer', transition: 'all 0.2s',
-} as React.CSSProperties;
-
-const LabelStyle = { display: 'block', fontSize: '13px', fontWeight: 500, color: '#718096', marginBottom: '8px' } as React.CSSProperties;
-const InputStyle = { width: '100%', padding: '8px 12px', background: '#F5F7FB', border: '1px solid #E2E8F0', borderRadius: '6px', fontSize: '13px', color: '#2D3748', outline: 'none' } as React.CSSProperties;
-const InputLabelStyle = { display: 'block', fontSize: '12px', color: '#A0AEC0', marginBottom: '4px' } as React.CSSProperties;

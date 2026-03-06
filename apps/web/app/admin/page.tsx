@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [usersRes, projectsRes, ordersRes, ebooksRes] = await Promise.all([
         fetch('http://localhost:3001/admin/users', { headers }).catch(() => ({ json: () => [] })),

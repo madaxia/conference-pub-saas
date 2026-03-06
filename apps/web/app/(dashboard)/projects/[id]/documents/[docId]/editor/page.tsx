@@ -64,7 +64,7 @@ export default function EditorPage() {
     const initFabric = async () => {
       try {
         const fabricModule = await import('fabric');
-        fabric = fabricModule.fabric;
+        fabric = fabricModule;
         
         if (canvasRef.current && containerRef.current) {
           const containerWidth = containerRef.current.clientWidth - (showLeftPanel ? 280 : 0) - (showRightPanel ? 280 : 0);
